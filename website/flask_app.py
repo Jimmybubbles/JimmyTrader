@@ -49,6 +49,12 @@ from db_swing_scanner import run_swing_scan, load_last_swing_results
 from db_higher_low_scanner import run_higher_low_scan, load_last_higher_low_results
 from db_extreme_exit_scanner import run_extreme_exit_scan, load_last_extreme_exit_results
 from db_doublebottom_scanner import run_doublebottom_scan, load_last_doublebottom_results
+from db_recession_watchlist import (
+    run_recession_scan, load_last_recession_results,
+    THEMES as RECESSION_THEMES, PILLARS as RECESSION_PILLARS,
+    tradingview_symbol as RECESSION_TV_SYMBOL, tradingview_list as RECESSION_TV_LIST,
+    NOSE_DIVE_PCT as RECESSION_NOSE_DIVE, APPROACH_PCT as RECESSION_APPROACH,
+)
 from db_price_channel_scanner import (
     run_price_channel_scan, load_last_price_channel_results,
     get_ticker_daily, resample_weekly, resample_monthly,
@@ -7506,6 +7512,178 @@ def doublebottom_page():
                       auto_refresh=(running and jname == 'Gap Down Double Bottom Scan'))
 
 
+# ─── Recession / Inflation Watchlist ──────────────────────────────────────────
+
+def _run_recession_scan_job():
+    global _job_running, _job_name
+    with open(LOG_FILE, 'w') as f:
+        f.write(f"=== Recession Watchlist Scan ===\nStarted: {datetime.now()}\n\n")
+    try:
+        run_recession_scan(log_callback=lambda m: open(LOG_FILE, 'a').write(m))
+    except Exception as e:
+        with open(LOG_FILE, 'a') as f:
+            f.write(f"\nERROR: {e}\n")
+    finally:
+        with _job_lock:
+            _job_running = False
+            _job_name    = ''
+
+
+def start_recession_scan():
+    global _job_running, _job_name
+    with _job_lock:
+        if _job_running:
+            return False
+        _job_running = True
+        _job_name    = 'Recession Watchlist Scan'
+    threading.Thread(target=_run_recession_scan_job, daemon=True).start()
+    return True
+
+
+@app.route('/run-recession')
+def run_recession():
+    if not is_admin():
+        return redirect('/admin')
+    start_recession_scan()
+    return redirect('/recession')
+
+
+@app.route('/recession')
+def recession_page():
+    if not is_admin():
+        return redirect('/')
+
+    with _job_lock:
+        running = _job_running
+        jname   = _job_name
+
+    last = load_last_recession_results()
+    by_ticker = {r['ticker']: r for r in last['results']} if last else {}
+
+    if running and jname == 'Recession Watchlist Scan':
+        run_btn = '<span class="btn btn-off">⏳ Scanning…</span>'
+    elif running:
+        run_btn = '<span class="btn btn-off">Another job running</span>'
+    else:
+        run_btn = '<a href="/run-recession" class="btn btn-blue">▶ Check Watchlist vs Blue Lines</a>'
+
+    status_colors = {
+        'AT BLUE': '#2563eb', 'APPROACHING': '#0891b2', 'ON BLUE': '#475569',
+        'DIVING': '#b91c1c', 'WATCH': '#333',
+    }
+
+    def row_html(ticker, note):
+        tv = RECESSION_TV_SYMBOL(ticker)
+        link = (f'<a href="https://www.tradingview.com/chart/?symbol={tv}" target="_blank" '
+                f'style="color:#60a5fa;font-weight:700">{ticker}</a>')
+        r = by_ticker.get(ticker)
+        if not r:
+            return f"""<tr><td>{link}</td><td style="color:#888">{note}</td>
+              <td colspan="7" style="color:#555">not scanned yet</td></tr>"""
+        st = r['status']
+        blue = f"${r['blue_low']:,.2f}–${r['blue_high']:,.2f}" if r['blue_low'] is not None else '—'
+        dist = f"{r['blue_dist']:+.1f}%" if r['blue_dist'] is not None else '—'
+        run  = f"{r['run_ranges']:.1f}" + (' ⚠' if r['extended'] else '')
+        return f"""<tr>
+          <td>{link}</td>
+          <td style="color:#888;font-size:.82rem">{note}</td>
+          <td><span style="background:{status_colors[st]};color:#fff;padding:2px 9px;
+                     border-radius:10px;font-size:.72rem;font-weight:700">{st}</span></td>
+          <td style="color:#fff;font-weight:600">${r['price']:,.2f}</td>
+          <td style="color:{'#ef4444' if r['drawdown'] <= -15 else '#aaa'}">{r['drawdown']:+.1f}%</td>
+          <td style="color:#aaa">${r['ath']:,.2f} <span style="color:#555">{r['ath_date']}</span></td>
+          <td style="color:#60a5fa">{blue}</td>
+          <td style="color:#aaa">{dist}</td>
+          <td style="color:#aaa">{run}</td>
+          <td style="color:#aaa">{r['blue_holds']}</td>
+        </tr>"""
+
+    head = """<tr><th>Ticker</th><th>Why</th><th>Status</th><th>Price</th><th>From ATH</th>
+      <th>ATH</th><th>Blue line</th><th>To blue</th><th>Run (ranges)</th><th>Blue holds</th></tr>"""
+
+    # Shortlist: every thesis stock that has dived and is at / approaching a blue line
+    notes = {t: n for th in RECESSION_THEMES for t, n in th['tickers'].items()}
+    hot = [r for r in (last['results'] if last else [])
+           if r.get('core') and r['status'] in ('AT BLUE', 'APPROACHING')]
+    if hot:
+        hot_rows = ''.join(row_html(r['ticker'], notes.get(r['ticker'], '')) for r in hot)
+        shortlist = f"""
+        <section style="margin-bottom:28px">
+          <h2 style="color:#60a5fa">Nose-dived onto the blue line</h2>
+          <p style="color:#888;font-size:.85rem;margin-top:-6px">Vice / get-to-work stocks {abs(RECESSION_NOSE_DIVE):.0f}%+
+             off their all-time high, sitting in or within {RECESSION_APPROACH:.0f}% of a blue band.</p>
+          <div style="overflow-x:auto"><table class="data-table">{head}{hot_rows}</table></div>
+        </section>"""
+    elif last:
+        shortlist = '<p style="color:#888">No vice / get-to-work stock is at or approaching a blue line right now.</p>'
+    else:
+        shortlist = ''
+
+    theme_html = ''
+    for pillar, pillar_title in RECESSION_PILLARS:
+        pillar_color = '#888' if pillar == 'side' else '#e5e7eb'
+        theme_html += (f'<h2 style="margin:34px 0 14px;color:{pillar_color};border-bottom:1px solid #2a2d3e;'
+                       f'padding-bottom:6px">{pillar_title}</h2>')
+        if pillar == 'side':
+            theme_html += ('<p style="color:#777;font-size:.85rem;margin-top:-6px">Not vices or work '
+                           'enablers — tracked for context only, never in the shortlist or TradingView list.</p>')
+        for th in RECESSION_THEMES:
+            if th['pillar'] != pillar:
+                continue
+            added = (' <span style="color:#f59e0b;font-size:.72rem;font-weight:600">SUGGESTED ADDITION</span>'
+                     if th.get('added') else '')
+            rows = ''.join(row_html(t, n) for t, n in th['tickers'].items())
+            theme_html += f"""
+            <section style="margin-bottom:24px">
+              <h3 style="margin-bottom:4px">{th['title']}{added}</h3>
+              <p style="color:#999;font-size:.85rem;margin:0 0 8px;font-style:italic">{th['rationale']}</p>
+              <div style="overflow-x:auto"><table class="data-table">{head}{rows}</table></div>
+            </section>"""
+
+    scan_info = ''
+    if last:
+        scan_info = (f"Last check: {last['scan_date']} &nbsp;·&nbsp; {last['total']} at/approaching "
+                     f"a blue line from {last['tickers_scanned']} tickers")
+        if last.get('failed'):
+            scan_info += f" &nbsp;·&nbsp; <span style='color:#ef4444'>no data: {', '.join(last['failed'])}</span>"
+
+    content = f"""
+    <style>
+    .data-table {{ width:100%; border-collapse:collapse; font-size:.85rem; }}
+    .data-table th {{ text-align:left; padding:8px 10px; color:#555; border-bottom:1px solid #2a2d3e;
+                      font-weight:500; white-space:nowrap; }}
+    .data-table td {{ padding:8px 10px; border-bottom:1px solid #151820; }}
+    .data-table tr:hover td {{ background:#1f2235; }}
+    </style>
+    <h1>Recession / Inflation Watchlist</h1>
+    <p style="color:#e5e7eb;max-width:780px;font-size:1.05rem"><b>Cut away the economic bullshit:</b> the only
+      things that gain value are <b>vices</b> and products that let the working class <b>get to work and work
+      longer hours</b>.</p>
+    <p style="color:#aaa;max-width:780px">People don't riot when they realise they're trapped — they adapt
+      and work more. Smokes, booze, a punt, energy drinks, coffee, stimulants, fast food to work, fuel, and a
+      cheap car kept on the road. Long-term plan: wait for these to nose-dive onto a blue line the way MCD
+      does, instead of monitoring trades live.</p>
+    <p style="color:#666;font-size:.8rem;max-width:780px">Blue band = 20–30% of each big range
+      (big range = $100 for a $100–999 stock, $10 for $10–99, $1 under $10) — e.g. MCD $120–130, $220–230.
+      Monthly bars, full history. <b>Run (ranges)</b> = how many big ranges the move into the ATH covered
+      (⚠ = 2.5+, "never 3"). <b>Blue holds</b> = months whose low tagged a blue band and closed back above it.</p>
+    <div class="btn-row" style="margin:14px 0">{run_btn}</div>
+    <p style="color:#888;font-size:.82rem">{scan_info}</p>
+    {shortlist}
+    {theme_html}
+    <section style="margin-top:28px">
+      <h3>TradingView watchlist <span style="color:#777;font-size:.8rem;font-weight:400">(vices + get to work only)</span></h3>
+      <textarea id="rec-tv" readonly style="width:100%;height:70px;background:#111;color:#ccc;
+                border:1px solid #333;border-radius:6px;padding:8px;font-size:.8rem">{RECESSION_TV_LIST()}</textarea>
+      <button id="rec-copy" class="btn btn-blue" style="margin-top:6px"
+        onclick="navigator.clipboard.writeText(document.getElementById('rec-tv').value)
+                 .then(()=>{{this.textContent='Copied!'}})">Copy</button>
+    </section>"""
+
+    return page_wrap('Recession Watchlist', 'recession', content,
+                      auto_refresh=(running and jname == 'Recession Watchlist Scan'))
+
+
 # ─── Weekly Extreme-Exit Scanner (Range Oscillator cooling off) ─────────────
 
 def _run_extreme_exit_scan_job():
@@ -10980,6 +11158,7 @@ def admin_hub():
     higherlow_btn = job_btn('▶ Run Higher Low Scan', '/run-higher-low')
     extremeexit_btn = job_btn('▶ Run Extreme Exit Scan', '/run-extreme-exit')
     doublebottom_btn = job_btn('▶ Run Gap Down Double Bottom Scan', '/run-doublebottom')
+    recession_btn = job_btn('▶ Check Recession Watchlist', '/run-recession')
 
     refresh_note = f'Last updated: {last_refresh}' if last_refresh else 'Not updated today'
     daily_update_note = (
@@ -11009,6 +11188,7 @@ def admin_hub():
     higherlow_last = load_last_higher_low_results()
     extremeexit_last = load_last_extreme_exit_results()
     doublebottom_last = load_last_doublebottom_results()
+    recession_last = load_last_recession_results()
 
     def scan_summary(last, results_url):
         if not last:
@@ -11151,6 +11331,10 @@ def admin_hub():
             <div class="btn-row" style="margin-bottom:6px">{doublebottom_btn}</div>
             {scan_summary(doublebottom_last, '/doublebottom')}
           </div>
+          <div>
+            <div class="btn-row" style="margin-bottom:6px">{recession_btn}</div>
+            {scan_summary(recession_last, '/recession')}
+          </div>
         </div>
       </div>
     </div>
@@ -11175,6 +11359,7 @@ def admin_hub():
         <a href="/higher-low" class="btn btn-blue" style="font-size:.82rem">Higher Low Scanner</a>
         <a href="/extreme-exit" class="btn btn-blue" style="font-size:.82rem">Extreme Exit Scanner</a>
         <a href="/doublebottom" class="btn btn-blue" style="font-size:.82rem">Gap Down Double Bottom Scanner</a>
+        <a href="/recession" class="btn btn-blue" style="font-size:.82rem">Recession Watchlist</a>
         <a href="/log-view" class="btn btn-blue" style="font-size:.82rem">Full Log</a>
         <a href="/ask"     class="btn btn-blue" style="font-size:.82rem">Ask Jimmy (Q&amp;A)</a>
       </div>
