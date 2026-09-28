@@ -1,0 +1,494 @@
+OVERSEAS TICKERS ADDED TO 5000.csv
+Added 2026-09-27 by refresh_universe.py — top companies by market cap on each
+market's main exchange (Yahoo Finance screener), keeping only real shares of companies
+based in that country. Foreign secondary lines (e.g. NVIDIA's NVD.DE), bonds, and companies
+already in the list were skipped — Germany has 15 because Xetra's top ranks are mostly
+foreign lines. Prices are in each market's own currency (GBp = pence).
+Total: 415 tickers across 17 countries
+
+BRAZIL  (25)
+------------
+  Ticker      Company                                       Sector                      Last close
+  ABEV3.SA    Ambev S.A.                                    Consumer Defensive           15.32 BRL
+  AXIA3.SA    AXIA Energia SA                               Utilities                    54.55 BRL
+  B3SA3.SA    B3 S.A. - Brasil, Bolsa, Balcão               Financial Services           17.96 BRL
+  BBAS3.SA    Banco do Brasil S.A.                          Financial Services           21.59 BRL
+  BBDC4.SA    Banco Bradesco S.A.                           Financial Services           17.88 BRL
+  BBSE3.SA    BB Seguridade Participações S.A.              Financial Services           38.99 BRL
+  BPAC11.SA   Banco BTG Pactual S.A.                        Financial Services           62.70 BRL
+  CPFE3.SA    CPFL Energia S.A.                             Utilities                    44.30 BRL
+  CXSE3.SA    Caixa Seguridade Participações S.A.           Financial Services           20.59 BRL
+  EMBJ3.SA    Embraer S.A.                                  Industrials                 101.52 BRL
+  ENEV3.SA    Eneva S.A.                                    Utilities                    27.40 BRL
+  EQTL3.SA    Equatorial S.A.                               Utilities                    39.79 BRL
+  GGBR4.SA    Gerdau S.A.                                   Basic Materials              24.99 BRL
+  ITSA4.SA    Itaúsa S.A.                                   Industrials                  13.99 BRL
+  ITUB3.SA    Itaú Unibanco Holding S.A.                    Financial Services           46.09 BRL
+  KLBN11.SA   Klabin S.A.                                   Basic Materials              18.15 BRL
+  PETR3.SA    Petróleo Brasileiro S.A. - Petrobras          Energy                       53.04 BRL
+  PRIO3.SA    Prio S.A.                                     Energy                       59.35 BRL
+  RDOR3.SA    Rede D'Or São Luiz S.A.                       Healthcare                   37.39 BRL
+  SANB11.SA   Banco Santander (Brasil) S.A.                 Financial Services           29.75 BRL
+  SBSP3.SA    Companhia de Saneamento Básico do Estado de   Utilities                    26.93 BRL
+  SUZB3.SA    Suzano S.A.                                   Basic Materials              45.00 BRL
+  VALE3.SA    Vale S.A.                                     Basic Materials              70.77 BRL
+  VIVT3.SA    Telefônica Brasil S.A.                        Communication Services       30.11 BRL
+  WEGE3.SA    WEG S.A.                                      Industrials                  51.07 BRL
+
+CANADA  (25)
+------------
+  Ticker      Company                                       Sector                      Last close
+  ABX.TO      Barrick Mining Corporation                    Basic Materials              60.70 CAD
+  AEM.TO      Agnico Eagle Mines Limited                    Basic Materials             275.10 CAD
+  ATD.TO      Alimentation Couche-Tard Inc.                 Consumer Cyclical            78.50 CAD
+  BMO.TO      Bank of Montreal                              Financial Services          243.97 CAD
+  BN.TO       Brookfield Corporation                        Financial Services           52.15 CAD
+  BNS.TO      The Bank of Nova Scotia                       Financial Services          132.34 CAD
+  CLS.TO      Celestica Inc.                                Technology                  516.68 CAD
+  CM.TO       Canadian Imperial Bank of Commerce            Financial Services          160.72 CAD
+  CNQ.TO      Canadian Natural Resources Limited            Energy                       67.17 CAD
+  CNR.TO      Canadian National Railway Company             Industrials                 170.90 CAD
+  CP.TO       Canadian Pacific Kansas City Limited          Industrials                 122.90 CAD
+  CVE.TO      Cenovus Energy Inc.                           Energy                       43.80 CAD
+  ENB.TO      Enbridge Inc.                                 Energy                       66.13 CAD
+  FNV.TO      Franco-Nevada Corporation                     Basic Materials             364.66 CAD
+  GWO.TO      Great-West Lifeco Inc.                        Financial Services           93.34 CAD
+  IMO.TO      Imperial Oil Limited                          Energy                      173.74 CAD
+  L.TO        Loblaw Companies Limited                      Consumer Defensive           62.71 CAD
+  MFC.TO      Manulife Financial Corporation                Financial Services           62.10 CAD
+  NA.TO       National Bank of Canada                       Financial Services          212.23 CAD
+  RY.TO       Royal Bank of Canada                          Financial Services          285.63 CAD
+  SHOP.TO     Shopify Inc.                                  Technology                  201.20 CAD
+  SU.TO       Suncor Energy Inc.                            Energy                       96.57 CAD
+  TD.TO       The Toronto-Dominion Bank                     Financial Services          170.69 CAD
+  TRP.TO      TC Energy Corporation                         Energy                       83.17 CAD
+  WPM.TO      Wheaton Precious Metals Corp.                 Basic Materials             202.12 CAD
+
+DENMARK  (25)
+-------------
+  Ticker      Company                                       Sector                      Last close
+  ALK-B.CO    ALK-Abelló A/S                                Healthcare                  199.70 DKK
+  ALMB.CO     Alm. Brand A/S                                Financial Services           16.35 DKK
+  ALSYDB.CO   AL Sydbank A/S                                Financial Services          721.00 DKK
+  CARL-B.CO   Carlsberg A/S                                 Consumer Defensive          859.40 DKK
+  COLO-B.CO   Coloplast A/S                                 Healthcare                  417.60 DKK
+  DANSKE.CO   Danske Bank A/S                               Financial Services          377.60 DKK
+  DEMANT.CO   Demant A/S                                    Healthcare                  307.20 DKK
+  DSV.CO      DSV A/S                                       Industrials               1,215.50 DKK
+  FLS.CO      FLSmidth & Co. A/S                            Industrials                 581.00 DKK
+  GMAB.CO     Genmab A/S                                    Healthcare                2,277.00 DKK
+  HLUN-B.CO   H. Lundbeck A/S                               Healthcare                   45.26 DKK
+  ISS.CO      ISS A/S                                       Industrials                 293.20 DKK
+  JYSK.CO     Jyske Bank A/S                                Financial Services        1,107.00 DKK
+  MAERSK-B.CO A.P. Møller - Mærsk A/S                       Industrials              23,240.00 DKK
+  NKT.CO      NKT A/S                                       Industrials                 918.00 DKK
+  NOVO-B.CO   Novo Nordisk A/S                              Healthcare                  253.00 DKK
+  NSIS-B.CO   Novozymes A/S                                 Basic Materials             424.30 DKK
+  ORSTED.CO   Ørsted A/S                                    Utilities                   137.00 DKK
+  PNDORA.CO   Pandora A/S                                   Consumer Cyclical           836.20 DKK
+  RBREW.CO    Royal Unibrew A/S                             Consumer Defensive          414.80 DKK
+  RILBA.CO    Ringkjøbing Landbobank A/S                    Financial Services        1,836.00 DKK
+  ROCK-B.CO   Rockwool A/S                                  Industrials                 188.60 DKK
+  TRYG.CO     Tryg A/S                                      Financial Services          141.30 DKK
+  VWS.CO      Vestas Wind Systems A/S                       Industrials                 198.50 DKK
+  ZEAL.CO     Zealand Pharma A/S                            Healthcare                  272.70 DKK
+
+FRANCE  (25)
+------------
+  Ticker      Company                                       Sector                      Last close
+  ACA.PA      Crédit Agricole S.A.                          Financial Services           18.18 EUR
+  AI.PA       L'Air Liquide S.A.                            Basic Materials             167.50 EUR
+  AIR.PA      Airbus SE                                     Industrials                 192.40 EUR
+  BN.PA       Danone S.A.                                   Consumer Defensive           59.56 EUR
+  BNP.PA      BNP Paribas SA                                Financial Services           99.30 EUR
+  CDI.PA      Christian Dior SE                             Consumer Cyclical           416.00 EUR
+  CS.PA       AXA SA                                        Financial Services           44.00 EUR
+  DG.PA       Vinci SA                                      Industrials                 111.30 EUR
+  DSY.PA      Dassault Systèmes SE                          Technology                   21.07 EUR
+  EL.PA       EssilorLuxottica Société anonyme              Healthcare                  143.90 EUR
+  ENGI.PA     Engie SA                                      Utilities                    23.35 EUR
+  GLE.PA      Société Générale Société anonyme              Financial Services           72.31 EUR
+  HO.PA       Thales S.A.                                   Industrials                 229.40 EUR
+  KER.PA      Kering SA                                     Consumer Cyclical           223.35 EUR
+  LR.PA       Legrand SA                                    Industrials                 134.85 EUR
+  MC.PA       LVMH Moët Hennessy - Louis Vuitton, Société   Consumer Cyclical           396.85 EUR
+  OR.PA       L'Oréal S.A.                                  Consumer Defensive          381.85 EUR
+  ORA.PA      Orange S.A.                                   Communication Services       14.16 EUR
+  RMS.PA      Hermès International Société en commandite p  Consumer Cyclical         1,347.50 EUR
+  SAF.PA      Safran SA                                     Industrials                 336.30 EUR
+  SAN.PA      Sanofi                                        Healthcare                   71.79 EUR
+  SGO.PA      Compagnie de Saint-Gobain S.A.                Industrials                  69.82 EUR
+  STMPA.PA    STMicroelectronics N.V.                       Technology                   45.10 EUR
+  SU.PA       Schneider Electric S.E.                       Industrials                 291.00 EUR
+  TTE.PA      TotalEnergies SE                              Energy                       79.99 EUR
+
+HONG KONG  (25)
+---------------
+  Ticker      Company                                       Sector                      Last close
+  0300.HK     Midea Group Co., Ltd.                         Consumer Cyclical            95.35 HKD
+  0700.HK     Tencent Holdings Limited                      Communication Services      436.60 HKD
+  0857.HK     PetroChina Company Limited                    Energy                        9.41 HKD
+  0883.HK     CNOOC Limited                                 Energy                       23.40 HKD
+  0939.HK     China Construction Bank Corporation           Financial Services            9.53 HKD
+  0941.HK     China Mobile Limited                          Communication Services       78.45 HKD
+  0981.HK     Semiconductor Manufacturing International Co  Technology                   63.35 HKD
+  1088.HK     China Shenhua Energy Company Limited          Energy                       43.76 HKD
+  1211.HK     BYD Company Limited                           Consumer Cyclical            78.10 HKD
+  1288.HK     Agricultural Bank of China Limited            Financial Services            6.51 HKD
+  1299.HK     AIA Group Limited                             Financial Services           73.75 HKD
+  1398.HK     Industrial and Commercial Bank of China Limi  Financial Services            7.51 HKD
+  1658.HK     Postal Savings Bank of China Co., Ltd.        Financial Services            5.32 HKD
+  1810.HK     Xiaomi Corporation                            Technology                   25.90 HKD
+  2318.HK     Ping An Insurance (Group) Company of China,   Financial Services           52.70 HKD
+  2359.HK     WuXi AppTec Co., Ltd.                         Healthcare                  209.60 HKD
+  2628.HK     China Life Insurance Company Limited          Financial Services           28.58 HKD
+  2899.HK     Zijin Mining Group Company Limited            Basic Materials              32.50 HKD
+  3308.HK     Zhongji Innolight Co., Ltd.                   Technology                1,171.00 HKD
+  3328.HK     Bank of Communications Co., Ltd.              Financial Services            8.19 HKD
+  3750.HK     Contemporary Amperex Technology Co., Limited  Industrials                 489.40 HKD
+  3968.HK     China Merchants Bank Co., Ltd.                Financial Services           50.50 HKD
+  3988.HK     Bank of China Limited                         Financial Services            5.98 HKD
+  9988.HK     Alibaba Group Holding Limited                 Consumer Cyclical           108.40 HKD
+  9999.HK     NetEase, Inc.                                 Communication Services      180.90 HKD
+
+INDIA  (25)
+-----------
+  Ticker      Company                                       Sector                      Last close
+  ADANIENT.NS Adani Enterprises Limited                     Energy                    2,916.50 INR
+  ADANIPORTS.NSAdani Ports and Special Economic Zone Limite  Industrials               1,788.00 INR
+  ADANIPOWER.NSAdani Power Limited                           Utilities                   202.75 INR
+  AXISBANK.NS Axis Bank Limited                             Financial Services        1,222.40 INR
+  BAJFINANCE.NSBajaj Finance Limited                         Financial Services          996.90 INR
+  BHARTIARTL.NSBharti Airtel Limited                         Communication Services    1,785.40 INR
+  HAL.NS      Hindustan Aeronautics Limited                 Industrials               4,800.00 INR
+  HCLTECH.NS  HCL Technologies Limited                      Technology                1,258.00 INR
+  HDFCBANK.NS HDFC Bank Limited                             Financial Services          735.60 INR
+  HINDUNILVR.NSHindustan Unilever Limited                    Consumer Defensive        1,942.90 INR
+  ICICIBANK.NSICICI Bank Limited                            Financial Services        1,326.80 INR
+  INFY.NS     Infosys Limited                               Technology                1,000.20 INR
+  ITC.NS      ITC Limited                                   Consumer Defensive          269.00 INR
+  JSWSTEEL.NS JSW Steel Limited                             Basic Materials           1,277.00 INR
+  KOTAKBANK.NSKotak Mahindra Bank Limited                   Financial Services          404.00 INR
+  LT.NS       Larsen & Toubro Limited                       Industrials               3,876.20 INR
+  M&M.NS      Mahindra & Mahindra Limited                   Consumer Cyclical         3,035.00 INR
+  MARUTI.NS   Maruti Suzuki India Limited                   Consumer Cyclical        12,065.00 INR
+  NTPC.NS     NTPC Limited                                  Utilities                   326.60 INR
+  RELIANCE.NS Reliance Industries Limited                   Energy                    1,226.00 INR
+  SBIN.NS     State Bank of India                           Financial Services          983.00 INR
+  SUNPHARMA.NSSun Pharmaceutical Industries Limited         Healthcare                1,852.20 INR
+  TCS.NS      Tata Consultancy Services Limited             Technology                2,082.00 INR
+  TITAN.NS    Titan Company Limited                         Consumer Cyclical         4,884.00 INR
+  ULTRACEMCO.NSUltraTech Cement Limited                      Basic Materials          11,155.00 INR
+
+ITALY  (25)
+-----------
+  Ticker      Company                                       Sector                      Last close
+  BAMI.MI     Banco BPM S.p.A.                              Financial Services           16.40 EUR
+  BMED.MI     Banca Mediolanum S.p.A.                       Financial Services           23.28 EUR
+  BMPS.MI     Banca Monte dei Paschi di Siena S.p.A.        Financial Services           11.97 EUR
+  BPE.MI      BPER Banca SpA                                Financial Services           14.35 EUR
+  ENEL.MI     Enel SpA                                      Utilities                     8.91 EUR
+  ENI.MI      Eni S.p.A.                                    Energy                       24.09 EUR
+  FBK.MI      FinecoBank Banca Fineco S.p.A.                Financial Services           21.86 EUR
+  G.MI        Assicurazioni Generali S.p.A.                 Financial Services           43.72 EUR
+  IG.MI       Italgas S.p.A.                                Utilities                     8.35 EUR
+  ISP.MI      Intesa Sanpaolo S.p.A.                        Financial Services            6.79 EUR
+  LDO.MI      Leonardo S.p.a.                               Industrials                  48.97 EUR
+  MB.MI       Mediobanca Banca di Credito Finanziario S.p.  Financial Services           29.05 EUR
+  MONC.MI     Moncler S.p.A.                                Consumer Cyclical            43.56 EUR
+  PRY.MI      Prysmian S.p.A.                               Industrials                 122.40 EUR
+  PST.MI      Poste Italiane S.p.A.                         Industrials                  25.82 EUR
+  RACE.MI     Ferrari N.V.                                  Consumer Cyclical           357.05 EUR
+  REC.MI      Recordati Industria Chimica e Farmaceutica S  Healthcare                   53.05 EUR
+  SRG.MI      Snam S.p.A.                                   Utilities                     5.59 EUR
+  STLAM.MI    Stellantis N.V.                               Consumer Cyclical             4.03 EUR
+  TEN.MI      Tenaris S.A.                                  Energy                       24.42 EUR
+  TIT.MI      Telecom Italia S.p.A.                         Communication Services        7.24 EUR
+  TPRO.MI     Technoprobe S.p.A.                            Technology                   30.14 EUR
+  TRN.MI      Terna S.p.A.                                  Utilities                     9.17 EUR
+  UCG.MI      UniCredit S.p.A.                              Financial Services           83.95 EUR
+  UNI.MI      Unipol Assicurazioni S.p.A.                   Financial Services           27.08 EUR
+
+JAPAN  (25)
+-----------
+  Ticker      Company                                       Sector                      Last close
+  285A.T      Kioxia Holdings Corporation                   Technology               55,780.00 JPY
+  2914.T      Japan Tobacco Inc.                            Consumer Defensive        6,943.00 JPY
+  4519.T      Chugai Pharmaceutical Co., Ltd.               Healthcare                6,616.00 JPY
+  6098.T      Recruit Holdings Co., Ltd.                    Communication Services   16,335.00 JPY
+  6501.T      Hitachi, Ltd.                                 Industrials               5,536.00 JPY
+  6503.T      Mitsubishi Electric Corporation               Industrials               5,239.00 JPY
+  6758.T      Sony Group Corporation                        Technology                3,710.00 JPY
+  6857.T      Advantest Corporation                         Technology               34,000.00 JPY
+  6861.T      Keyence Corporation                           Technology               79,600.00 JPY
+  6981.T      Murata Manufacturing Co., Ltd.                Technology                8,022.00 JPY
+  7011.T      Mitsubishi Heavy Industries, Ltd.             Industrials               3,897.00 JPY
+  7182.T      JAPAN POST BANK Co., Ltd.                     Financial Services        3,349.00 JPY
+  7203.T      Toyota Motor Corporation                      Consumer Cyclical         2,989.50 JPY
+  8001.T      ITOCHU Corporation                            Industrials               2,211.00 JPY
+  8031.T      Mitsui & Co., Ltd.                            Industrials               5,071.00 JPY
+  8035.T      Tokyo Electron Limited                        Technology               56,520.00 JPY
+  8058.T      Mitsubishi Corporation                        Industrials               4,859.00 JPY
+  8306.T      Mitsubishi UFJ Financial Group, Inc.          Financial Services        3,714.00 JPY
+  8316.T      Sumitomo Mitsui Financial Group, Inc.         Financial Services        6,919.00 JPY
+  8411.T      Mizuho Financial Group, Inc.                  Financial Services        8,626.00 JPY
+  8766.T      Tokio Marine Holdings, Inc.                   Financial Services        7,992.00 JPY
+  9432.T      NTT, Inc.                                     Communication Services      176.10 JPY
+  9433.T      KDDI Corporation                              Communication Services    3,039.00 JPY
+  9983.T      Fast Retailing Co., Ltd.                      Consumer Cyclical        68,620.00 JPY
+  9984.T      SoftBank Group Corp.                          Communication Services    6,150.00 JPY
+
+NETHERLANDS  (25)
+-----------------
+  Ticker      Company                                       Sector                      Last close
+  ABN.AS      ABN AMRO Bank N.V.                            Financial Services           43.65 EUR
+  AD.AS       Koninklijke Ahold Delhaize N.V.               Consumer Defensive           31.76 EUR
+  ADYEN.AS    Adyen N.V.                                    Technology                  875.50 EUR
+  AGN.AS      Aegon Ltd.                                    Financial Services            7.85 EUR
+  AKZA.AS     Akzo Nobel N.V.                               Basic Materials              56.84 EUR
+  ASM.AS      ASM International NV                          Technology                  844.60 EUR
+  ASML.AS     ASML Holding N.V.                             Technology                1,522.60 EUR
+  ASRNL.AS    ASR Nederland N.V.                            Financial Services           73.48 EUR
+  BESI.AS     BE Semiconductor Industries N.V.              Technology                  187.60 EUR
+  CTPNV.AS    CTP N.V.                                      Real Estate                  12.90 EUR
+  EXO.AS      Exor N.V.                                     Financial Services           70.55 EUR
+  HAL.AS      HAL Trust                                     Financial Services          165.40 EUR
+  HEIA.AS     Heineken N.V.                                 Consumer Defensive           70.58 EUR
+  INGA.AS     ING Groep N.V.                                Financial Services           31.80 EUR
+  INPST.AS    InPost S.A.                                   Industrials                  15.55 EUR
+  KPN.AS      Koninklijke KPN N.V.                          Communication Services        4.06 EUR
+  MICC.AS     The Magnum Ice Cream Company N.V.             Consumer Defensive           16.54 EUR
+  MT.AS       ArcelorMittal S.A.                            Basic Materials              61.78 EUR
+  NN.AS       NN Group N.V.                                 Financial Services           79.96 EUR
+  PHIA.AS     Koninklijke Philips N.V.                      Healthcare                   21.87 EUR
+  PRX.AS      Prosus N.V.                                   Consumer Cyclical            36.09 EUR
+  RAND.AS     Randstad N.V.                                 Industrials                  35.93 EUR
+  SBMO.AS     SBM Offshore N.V.                             Energy                       36.00 EUR
+  UMG.AS      Universal Music Group N.V.                    Communication Services       14.59 EUR
+  WKL.AS      Wolters Kluwer N.V.                           Industrials                  68.66 EUR
+
+SINGAPORE  (25)
+---------------
+  Ticker      Company                                       Sector                      Last close
+  5E2.SI      Seatrium Limited                              Energy                        2.10 SGD
+  9CI.SI      CapitaLand Investment Limited                 Real Estate                   2.60 SGD
+  A17U.SI     CapitaLand Ascendas REIT                      Real Estate                   2.28 SGD
+  AJBU.SI     Keppel DC REIT                                Real Estate                   2.12 SGD
+  BN4.SI      Keppel Ltd.                                   Industrials                  11.30 SGD
+  BS6.SI      Yangzijiang Shipbuilding (Holdings) Ltd.      Industrials                   5.19 SGD
+  C07.SI      Jardine Cycle & Carriage Limited              Industrials                  26.66 SGD
+  C09.SI      City Developments Limited                     Real Estate                   8.26 SGD
+  C38U.SI     CapitaLand Integrated Commercial Trust        Real Estate                   2.24 SGD
+  C6L.SI      Singapore Airlines Limited                    Industrials                   6.65 SGD
+  D05.SI      DBS Group Holdings Ltd                        Financial Services           78.00 SGD
+  EB5.SI      First Resources Limited                       Consumer Defensive            4.62 SGD
+  F34.SI      Wilmar International Limited                  Consumer Defensive            3.68 SGD
+  G07.SI      Great Eastern Holdings Limited                Financial Services           19.88 SGD
+  G13.SI      Genting Singapore Limited                     Consumer Cyclical             0.62 SGD
+  H78.SI      Hongkong Land Holdings Limited                Real Estate                   8.57 SGD
+  J36.SI      Jardine Matheson Holdings Limited             Industrials                  55.86 SGD
+  N2IU.SI     Mapletree Pan Asia Commercial Trust           Real Estate                   1.22 SGD
+  O39.SI      Oversea-Chinese Banking Corporation Limited   Financial Services           32.01 SGD
+  S63.SI      Singapore Technologies Engineering Ltd        Industrials                  10.87 SGD
+  S68.SI      Singapore Exchange Limited                    Financial Services           22.40 SGD
+  U11.SI      United Overseas Bank Limited                  Financial Services           42.57 SGD
+  U14.SI      UOL Group Limited                             Real Estate                   8.46 SGD
+  U96.SI      Sembcorp Industries Ltd                       Utilities                     5.87 SGD
+  Z74.SI      Singapore Telecommunications Limited          Communication Services        4.28 SGD
+
+SOUTH KOREA  (25)
+-----------------
+  Ticker      Company                                       Sector                      Last close
+  000270.KS   Kia Corporation                               Consumer Cyclical       115,400.00 KRW
+  000660.KS   SK hynix Inc.                                 Technology              1,862,000.00 KRW
+  000810.KS   Samsung Fire & Marine Insurance Co., Ltd.     Financial Services      648,000.00 KRW
+  005380.KS   Hyundai Motor Company                         Consumer Cyclical       353,500.00 KRW
+  005930.KS   Samsung Electronics Co., Ltd.                 Technology              285,500.00 KRW
+  006400.KS   Samsung SDI Co., Ltd.                         Industrials             521,000.00 KRW
+  009150.KS   Samsung Electro-Mechanics Co., Ltd.           Technology              1,507,000.00 KRW
+  010120.KS   LS ELECTRIC Co., Ltd.                         Industrials             205,500.00 KRW
+  012330.KS   Hyundai Mobis Co.,Ltd                         Consumer Cyclical       367,500.00 KRW
+  012450.KS   Hanwha Aerospace Co., Ltd.                    Industrials             1,021,000.00 KRW
+  028260.KS   Samsung C&T Corporation                       Industrials             367,000.00 KRW
+  032830.KS   Samsung Life Insurance Co., Ltd.              Financial Services      294,500.00 KRW
+  034020.KS   Doosan Enerbility Co., Ltd.                   Industrials              81,700.00 KRW
+  034730.KS   SK Inc.                                       Industrials             611,000.00 KRW
+  035420.KS   NAVER Corporation                             Communication Services  194,700.00 KRW
+  055550.KS   Shinhan Financial Group Co., Ltd.             Financial Services      109,300.00 KRW
+  066570.KS   LG Electronics Inc.                           Technology              209,000.00 KRW
+  068270.KS   Celltrion, Inc.                               Healthcare              177,400.00 KRW
+  086790.KS   Hana Financial Group Inc.                     Financial Services      133,100.00 KRW
+  105560.KS   KB Financial Group Inc.                       Financial Services      173,200.00 KRW
+  207940.KS   Samsung Biologics Co.,Ltd.                    Healthcare              1,366,000.00 KRW
+  298040.KS   Hyosung Heavy Industries Corporation          Industrials             2,896,000.00 KRW
+  329180.KS   HD Hyundai Heavy Industries Co., Ltd.         Industrials             441,000.00 KRW
+  373220.KS   LG Energy Solution, Ltd.                      Industrials             351,500.00 KRW
+  402340.KS   SK Square Co., Ltd.                           Technology              1,190,000.00 KRW
+
+SPAIN  (25)
+-----------
+  Ticker      Company                                       Sector                      Last close
+  ACS.MC      ACS, Actividades de Construcción y Servicios  Industrials                  93.60 EUR
+  AENA.MC     Aena S.M.E., S.A.                             Industrials                  25.88 EUR
+  AMS.MC      Amadeus IT Group, S.A.                        Technology                   53.48 EUR
+  ANA.MC      Acciona, S.A.                                 Industrials                 213.80 EUR
+  ANE.MC      Corporación Acciona Energías Renovables, S.A  Utilities                    21.90 EUR
+  BBVA.MC     Banco Bilbao Vizcaya Argentaria, S.A.         Financial Services           25.20 EUR
+  BKT.MC      Bankinter, S.A.                               Financial Services           16.63 EUR
+  CABK.MC     CaixaBank, S.A.                               Financial Services           13.23 EUR
+  CLNX.MC     Cellnex Telecom, S.A.                         Real Estate                  23.99 EUR
+  ELE.MC      Endesa, S.A.                                  Utilities                    42.18 EUR
+  GRF.MC      Grifols, S.A.                                 Healthcare                    9.59 EUR
+  IBE.MC      Iberdrola, S.A.                               Utilities                    20.33 EUR
+  IDR.MC      Indra Sistemas, S.A.                          Technology                   61.72 EUR
+  ITX.MC      Industria de Diseño Textil, S.A.              Consumer Cyclical            53.26 EUR
+  LOG.MC      Logista Integral, S.A.                        Industrials                  35.32 EUR
+  MAP.MC      Mapfre, S.A.                                  Financial Services            4.34 EUR
+  MRL.MC      MERLIN Properties SOCIMI, S.A.                Real Estate                  12.26 EUR
+  NTGY.MC     Naturgy Energy Group, S.A.                    Utilities                    29.10 EUR
+  PUIG.MC     Puig Brands, S.A.                             Consumer Defensive           17.84 EUR
+  RED.MC      Redeia Corporación, S.A.                      Utilities                    14.96 EUR
+  REP.MC      Repsol, S.A.                                  Energy                       30.75 EUR
+  SAB.MC      Banco de Sabadell, S.A.                       Financial Services            3.76 EUR
+  SAN.MC      Banco Santander, S.A.                         Financial Services           12.57 EUR
+  TEF.MC      Telefónica, S.A.                              Communication Services        3.45 EUR
+  UNI.MC      Unicaja Banco, S.A.                           Financial Services            3.63 EUR
+
+SWEDEN  (25)
+------------
+  Ticker      Company                                       Sector                      Last close
+  ALFA.ST     Alfa Laval AB (publ)                          Industrials                 563.40 SEK
+  ASSA-B.ST   ASSA ABLOY AB (publ)                          Industrials                 355.30 SEK
+  ATCO-A.ST   Atlas Copco AB (publ)                         Industrials                 205.40 SEK
+  BOL.ST      Boliden AB (publ)                             Basic Materials             521.00 SEK
+  EPI-A.ST    Epiroc AB (publ)                              Industrials                 260.20 SEK
+  EQT.ST      EQT AB (publ)                                 Financial Services          284.90 SEK
+  ERIC-B.ST   Telefonaktiebolaget LM Ericsson (publ)        Technology                   94.96 SEK
+  ESSITY-B.ST Essity AB (publ)                              Consumer Defensive          258.90 SEK
+  EVO.ST      Evolution AB (publ)                           Consumer Cyclical           816.00 SEK
+  HEXA-B.ST   Hexagon AB (publ)                             Technology                   98.40 SEK
+  HM-B.ST     H & M Hennes & Mauritz AB (publ)              Consumer Cyclical           161.60 SEK
+  INDU-A.ST   AB Industrivärden (publ)                      Financial Services          546.50 SEK
+  INVE-B.ST   Investor AB (publ)                            Financial Services          411.45 SEK
+  LATO-B.ST   Investment AB Latour (publ)                   Industrials                 209.00 SEK
+  LIFCO-B.ST  Lifco AB (publ)                               Industrials                 317.80 SEK
+  LUND-B.ST   L E Lundbergföretagen AB (publ)               Industrials                 591.50 SEK
+  SAAB-B.ST   Saab AB (publ)                                Industrials                 622.70 SEK
+  SAND.ST     Sandvik AB (publ)                             Industrials                 378.00 SEK
+  SEB-A.ST    Skandinaviska Enskilda Banken AB (publ)       Financial Services          233.90 SEK
+  SHB-B.ST    Svenska Handelsbanken AB (publ)               Financial Services          244.80 SEK
+  SKF-B.ST    AB SKF (publ)                                 Industrials                 272.10 SEK
+  SOBI.ST     Swedish Orphan Biovitrum AB (publ)            Healthcare                  436.20 SEK
+  SWED-A.ST   Swedbank AB (publ)                            Financial Services          410.70 SEK
+  TELIA.ST    Telia Company AB (publ)                       Communication Services       45.59 SEK
+  VOLV-A.ST   AB Volvo (publ)                               Industrials                 325.40 SEK
+
+SWITZERLAND  (25)
+-----------------
+  Ticker      Company                                       Sector                      Last close
+  ABBNE.SW    ABB Ltd                                       Industrials                  80.18 CHF
+  ALC.SW      Alcon Inc.                                    Healthcare                   53.30 CHF
+  CFR.SW      Compagnie Financière Richemont SA             Consumer Cyclical           171.40 CHF
+  DSFIR.SW    DSM-Firmenich AG                              Basic Materials              92.30 CHF
+  EMSN.SW     EMS-CHEMIE HOLDING AG                         Basic Materials             820.50 CHF
+  GALD.SW     Galderma Group AG                             Healthcare                  163.00 CHF
+  GIVN.SW     Givaudan SA                                   Basic Materials           3,447.00 CHF
+  HBAN.SW     Helvetia Baloise Holding AG                   Financial Services          213.80 CHF
+  HOLN.SW     Holcim AG                                     Basic Materials              67.26 CHF
+  KNIN.SW     Kuehne + Nagel International AG               Industrials                 226.70 CHF
+  LISN.SW     Chocoladefabriken Lindt & Sprüngli AG         Consumer Defensive       89,500.00 CHF
+  LONN.SW     Lonza Group AG                                Healthcare                  569.20 CHF
+  NESN.SW     Nestlé S.A.                                   Consumer Defensive           77.17 CHF
+  NOVN.SW     Novartis AG                                   Healthcare                  119.80 CHF
+  RO.SW       Roche Holding AG                              Healthcare                  375.20 CHF
+  SCHP.SW     Schindler Holding AG                          Industrials                 262.80 CHF
+  SCMN.SW     Swisscom AG                                   Communication Services      657.00 CHF
+  SDZ.SW      Sandoz Group AG                               Healthcare                   71.16 CHF
+  SGSN.SW     SGS SA                                        Industrials                  94.50 CHF
+  SIKA.SW     Sika AG                                       Basic Materials             183.10 CHF
+  SLHN.SW     Swiss Life Holding AG                         Financial Services          915.80 CHF
+  SREN.SW     Swiss Re AG                                   Financial Services          141.65 CHF
+  UBSG.SW     UBS Group AG                                  Financial Services           40.80 CHF
+  VACN.SW     VAT Group AG                                  Industrials                 654.80 CHF
+  ZURN.SW     Zurich Insurance Group AG                     Financial Services          581.20 CHF
+
+TAIWAN  (25)
+------------
+  Ticker      Company                                       Sector                      Last close
+  1303.TW     Nan Ya Plastics Corporation                   Basic Materials             238.00 TWD
+  2059.TW     King Slide Works Co., Ltd.                    Consumer Cyclical        12,350.00 TWD
+  2303.TW     United Microelectronics Corporation           Technology                  154.00 TWD
+  2308.TW     Delta Electronics, Inc.                       Technology                1,910.00 TWD
+  2317.TW     Hon Hai Precision Industry Co., Ltd.          Technology                  250.50 TWD
+  2327.TW     Yageo Corporation                             Technology                  580.00 TWD
+  2330.TW     Taiwan Semiconductor Manufacturing Company L  Technology                2,475.00 TWD
+  2345.TW     Accton Technology Corporation                 Technology                1,895.00 TWD
+  2360.TW     Chroma ATE Inc.                               Technology                2,295.00 TWD
+  2382.TW     Quanta Computer Inc.                          Technology                  338.50 TWD
+  2383.TW     Elite Material Co., Ltd.                      Technology                5,050.00 TWD
+  2408.TW     Nanya Technology Corporation                  Technology                  503.00 TWD
+  2412.TW     Chunghwa Telecom Co., Ltd.                    Communication Services      145.00 TWD
+  2454.TW     MediaTek Inc.                                 Technology                5,285.00 TWD
+  2881.TW     Fubon Financial Holding Co., Ltd.             Financial Services          150.00 TWD
+  2882.TW     Cathay Financial Holding Co., Ltd.            Financial Services          110.50 TWD
+  2887.TW     TS Financial Holding Co., Ltd.                Financial Services           42.50 TWD
+  2891.TW     CTBC Financial Holding Co., Ltd.              Financial Services           68.50 TWD
+  3017.TW     Asia Vital Components Co., Ltd.               Technology                3,555.00 TWD
+  3037.TW     Unimicron Technology Corp.                    Technology                1,185.00 TWD
+  3443.TW     Global Unichip Corp.                          Technology                8,525.00 TWD
+  3653.TW     Jentech Precision Industrial Co., Ltd         Technology                6,920.00 TWD
+  3711.TW     ASE Technology Holding Co., Ltd.              Technology                  699.00 TWD
+  6669.TW     Wiwynn Corporation                            Technology                2,115.00 TWD
+  7769.TW     Hon. Precision, Inc.                          Technology                5,670.00 TWD
+
+UNITED KINGDOM  (25)
+--------------------
+  Ticker      Company                                       Sector                      Last close
+  AAL.L       Anglo American plc                            Basic Materials           4,042.00 GBp
+  ANTO.L      Antofagasta plc                               Basic Materials           3,730.00 GBp
+  AZN.L       AstraZeneca PLC                               Healthcare               12,552.00 GBp
+  BA.L        BAE Systems plc                               Industrials               1,972.00 GBp
+  BARC.L      Barclays PLC                                  Financial Services          463.90 GBp
+  BATS.L      British American Tobacco p.l.c.               Consumer Defensive        4,180.00 GBp
+  BP.L        BP p.l.c.                                     Energy                      558.50 GBp
+  CCEP.L      Coca-Cola Europacific Partners PLC            Consumer Defensive        7,620.00 GBp
+  DGE.L       Diageo plc                                    Consumer Defensive        1,642.00 GBp
+  GLEN.L      Glencore plc                                  Basic Materials             561.10 GBp
+  GSK.L       GSK plc                                       Healthcare                1,851.00 GBp
+  HLN.L       Haleon plc                                    Healthcare                  342.70 GBp
+  HSBA.L      HSBC Holdings plc                             Financial Services        1,512.20 GBp
+  LLOY.L      Lloyds Banking Group plc                      Financial Services          108.80 GBp
+  LSEG.L      London Stock Exchange Group plc               Financial Services        8,200.00 GBp
+  NG.L        National Grid plc                             Utilities                 1,127.00 GBp
+  NWG.L       NatWest Group plc                             Financial Services          694.40 GBp
+  REL.L       RELX PLC                                      Industrials               2,527.00 GBp
+  RKT.L       Reckitt Benckiser Group plc                   Consumer Defensive        4,905.00 GBp
+  RR.L        Rolls-Royce Holdings plc                      Industrials               1,481.40 GBp
+  SHEL.L      Shell plc                                     Energy                    3,611.00 GBp
+  SSE.L       SSE plc                                       Utilities                 2,456.00 GBp
+  STAN.L      Standard Chartered PLC                        Financial Services        2,313.00 GBp
+  TSCO.L      Tesco PLC                                     Consumer Defensive          473.20 GBp
+  ULVR.L      Unilever PLC                                  Consumer Defensive        4,664.50 GBp
+
+GERMANY  (15)
+-------------
+  Ticker      Company                                       Sector                      Last close
+  ALV.DE      Allianz SE                                    Financial Services          423.50 EUR
+  BAYN.DE     Bayer Aktiengesellschaft                      Healthcare                   50.02 EUR
+  CBK.DE      Commerzbank AG                                Financial Services           42.19 EUR
+  DB1.DE      Deutsche Börse AG                             Financial Services          284.80 EUR
+  DBK.DE      Deutsche Bank Aktiengesellschaft              Financial Services           31.76 EUR
+  DHL.DE      DHL AG                                        Industrials                  57.20 EUR
+  DTE.DE      Deutsche Telekom AG                           Communication Services       27.00 EUR
+  ENR.DE      Siemens Energy AG                             Industrials                 142.60 EUR
+  IFX.DE      Infineon Technologies AG                      Technology                   56.71 EUR
+  MRK.DE      Merck KGaA                                    Healthcare                  135.00 EUR
+  MUV2.DE     Münchener Rückversicherungs-Gesellschaft Akt  Financial Services          510.40 EUR
+  RHM.DE      Rheinmetall AG                                Industrials                 982.40 EUR
+  RWE.DE      RWE Aktiengesellschaft                        Utilities                    59.40 EUR
+  SAP.DE      SAP SE                                        Technology                  185.92 EUR
+  SIE.DE      Siemens Aktiengesellschaft                    Industrials                 278.30 EUR
+
+ALL ADDED TICKERS (comma-separated, for TradingView import)
+
+000270.KS,000660.KS,000810.KS,005380.KS,005930.KS,006400.KS,009150.KS,010120.KS,012330.KS,012450.KS,028260.KS,0300.HK,032830.KS,034020.KS,034730.KS,035420.KS,055550.KS,066570.KS,068270.KS,0700.HK,0857.HK,086790.KS,0883.HK,0939.HK,0941.HK,0981.HK,105560.KS,1088.HK,1211.HK,1288.HK,1299.HK,1303.TW,1398.HK,1658.HK,1810.HK,2059.TW,207940.KS,2303.TW,2308.TW,2317.TW,2318.HK,2327.TW,2330.TW,2345.TW,2359.HK,2360.TW,2382.TW,2383.TW,2408.TW,2412.TW,2454.TW,2628.HK,285A.T,2881.TW,2882.TW,2887.TW,2891.TW,2899.HK,2914.T,298040.KS,3017.TW,3037.TW,329180.KS,3308.HK,3328.HK,3443.TW,3653.TW,3711.TW,373220.KS,3750.HK,3968.HK,3988.HK,402340.KS,4519.T,5E2.SI,6098.T,6501.T,6503.T,6669.TW,6758.T,6857.T,6861.T,6981.T,7011.T,7182.T,7203.T,7769.TW,8001.T,8031.T,8035.T,8058.T,8306.T,8316.T,8411.T,8766.T,9432.T,9433.T,9983.T,9984.T,9988.HK,9999.HK,9CI.SI,A17U.SI,AAL.L,ABBNE.SW,ABEV3.SA,ABN.AS,ABX.TO,ACA.PA,ACS.MC,AD.AS,ADANIENT.NS,ADANIPORTS.NS,ADANIPOWER.NS,ADYEN.AS,AEM.TO,AENA.MC,AGN.AS,AI.PA,AIR.PA,AJBU.SI,AKZA.AS,ALC.SW,ALFA.ST,ALK-B.CO,ALMB.CO,ALSYDB.CO,ALV.DE,AMS.MC,ANA.MC,ANE.MC,ANTO.L,ASM.AS,ASML.AS,ASRNL.AS,ASSA-B.ST,ATCO-A.ST,ATD.TO,AXIA3.SA,AXISBANK.NS,AZN.L,B3SA3.SA,BA.L,BAJFINANCE.NS,BAMI.MI,BARC.L,BATS.L,BAYN.DE,BBAS3.SA,BBDC4.SA,BBSE3.SA,BBVA.MC,BESI.AS,BHARTIARTL.NS,BKT.MC,BMED.MI,BMO.TO,BMPS.MI,BN.PA,BN.TO,BN4.SI,BNP.PA,BNS.TO,BOL.ST,BP.L,BPAC11.SA,BPE.MI,BS6.SI,C07.SI,C09.SI,C38U.SI,C6L.SI,CABK.MC,CARL-B.CO,CBK.DE,CCEP.L,CDI.PA,CFR.SW,CLNX.MC,CLS.TO,CM.TO,CNQ.TO,CNR.TO,COLO-B.CO,CP.TO,CPFE3.SA,CS.PA,CTPNV.AS,CVE.TO,CXSE3.SA,D05.SI,DANSKE.CO,DB1.DE,DBK.DE,DEMANT.CO,DG.PA,DGE.L,DHL.DE,DSFIR.SW,DSV.CO,DSY.PA,DTE.DE,EB5.SI,EL.PA,ELE.MC,EMBJ3.SA,EMSN.SW,ENB.TO,ENEL.MI,ENEV3.SA,ENGI.PA,ENI.MI,ENR.DE,EPI-A.ST,EQT.ST,EQTL3.SA,ERIC-B.ST,ESSITY-B.ST,EVO.ST,EXO.AS,F34.SI,FBK.MI,FLS.CO,FNV.TO,G.MI,G07.SI,G13.SI,GALD.SW,GGBR4.SA,GIVN.SW,GLE.PA,GLEN.L,GMAB.CO,GRF.MC,GSK.L,GWO.TO,H78.SI,HAL.AS,HAL.NS,HBAN.SW,HCLTECH.NS,HDFCBANK.NS,HEIA.AS,HEXA-B.ST,HINDUNILVR.NS,HLN.L,HLUN-B.CO,HM-B.ST,HO.PA,HOLN.SW,HSBA.L,IBE.MC,ICICIBANK.NS,IDR.MC,IFX.DE,IG.MI,IMO.TO,INDU-A.ST,INFY.NS,INGA.AS,INPST.AS,INVE-B.ST,ISP.MI,ISS.CO,ITC.NS,ITSA4.SA,ITUB3.SA,ITX.MC,J36.SI,JSWSTEEL.NS,JYSK.CO,KER.PA,KLBN11.SA,KNIN.SW,KOTAKBANK.NS,KPN.AS,L.TO,LATO-B.ST,LDO.MI,LIFCO-B.ST,LISN.SW,LLOY.L,LOG.MC,LONN.SW,LR.PA,LSEG.L,LT.NS,LUND-B.ST,M&M.NS,MAERSK-B.CO,MAP.MC,MARUTI.NS,MB.MI,MC.PA,MFC.TO,MICC.AS,MONC.MI,MRK.DE,MRL.MC,MT.AS,MUV2.DE,N2IU.SI,NA.TO,NESN.SW,NG.L,NKT.CO,NN.AS,NOVN.SW,NOVO-B.CO,NSIS-B.CO,NTGY.MC,NTPC.NS,NWG.L,O39.SI,OR.PA,ORA.PA,ORSTED.CO,PETR3.SA,PHIA.AS,PNDORA.CO,PRIO3.SA,PRX.AS,PRY.MI,PST.MI,PUIG.MC,RACE.MI,RAND.AS,RBREW.CO,RDOR3.SA,REC.MI,RED.MC,REL.L,RELIANCE.NS,REP.MC,RHM.DE,RILBA.CO,RKT.L,RMS.PA,RO.SW,ROCK-B.CO,RR.L,RWE.DE,RY.TO,S63.SI,S68.SI,SAAB-B.ST,SAB.MC,SAF.PA,SAN.MC,SAN.PA,SANB11.SA,SAND.ST,SAP.DE,SBIN.NS,SBMO.AS,SBSP3.SA,SCHP.SW,SCMN.SW,SDZ.SW,SEB-A.ST,SGO.PA,SGSN.SW,SHB-B.ST,SHEL.L,SHOP.TO,SIE.DE,SIKA.SW,SKF-B.ST,SLHN.SW,SOBI.ST,SREN.SW,SRG.MI,SSE.L,STAN.L,STLAM.MI,STMPA.PA,SU.PA,SU.TO,SUNPHARMA.NS,SUZB3.SA,SWED-A.ST,TCS.NS,TD.TO,TEF.MC,TELIA.ST,TEN.MI,TIT.MI,TITAN.NS,TPRO.MI,TRN.MI,TRP.TO,TRYG.CO,TSCO.L,TTE.PA,U11.SI,U14.SI,U96.SI,UBSG.SW,UCG.MI,ULTRACEMCO.NS,ULVR.L,UMG.AS,UNI.MC,UNI.MI,VACN.SW,VALE3.SA,VIVT3.SA,VOLV-A.ST,VWS.CO,WEGE3.SA,WKL.AS,WPM.TO,Z74.SI,ZEAL.CO,ZURN.SW

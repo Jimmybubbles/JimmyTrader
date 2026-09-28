@@ -48,3 +48,6 @@ website/uploads/
 # PythonAnywhere notes
 scanners/pythonAnywhere.md
 scanners/CSV/github.txt
+
+# Local price cache for backtests (refresh_universe.py)
+scanners/data_cache/
