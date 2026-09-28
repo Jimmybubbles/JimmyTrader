@@ -49,6 +49,7 @@ from db_swing_scanner import run_swing_scan, load_last_swing_results
 from db_higher_low_scanner import run_higher_low_scan, load_last_higher_low_results
 from db_extreme_exit_scanner import run_extreme_exit_scan, load_last_extreme_exit_results
 from db_doublebottom_scanner import run_doublebottom_scan, load_last_doublebottom_results
+from db_range369_scanner import run_range369_scan, load_last_range369_results
 from db_recession_watchlist import (
     run_recession_scan, load_last_recession_results,
     THEMES as RECESSION_THEMES, PILLARS as RECESSION_PILLARS,
@@ -7512,6 +7513,315 @@ def doublebottom_page():
                       auto_refresh=(running and jname == 'Gap Down Double Bottom Scan'))
 
 
+# ─── Range 0-3-6-9-1 Scanner (6 as the mean) ─────────────────────────────────
+
+def _run_range369_scan_job():
+    global _job_running, _job_name
+    with open(LOG_FILE, 'w') as f:
+        f.write(f"=== Range 3-6-9 Scan ===\nStarted: {datetime.now()}\n\n")
+    try:
+        run_range369_scan(log_callback=lambda m: open(LOG_FILE, 'a').write(m))
+    except Exception as e:
+        with open(LOG_FILE, 'a') as f:
+            f.write(f"\nERROR: {e}\n")
+    finally:
+        with _job_lock:
+            _job_running = False
+            _job_name    = ''
+
+
+def start_range369_scan():
+    global _job_running, _job_name
+    with _job_lock:
+        if _job_running:
+            return False
+        _job_running = True
+        _job_name    = 'Range 3-6-9 Scan'
+    threading.Thread(target=_run_range369_scan_job, daemon=True).start()
+    return True
+
+
+@app.route('/run-range369')
+def run_range369():
+    if not is_admin():
+        return redirect('/admin')
+    start_range369_scan()
+    return redirect('/range369')
+
+
+@app.route('/range369')
+def range369_page():
+    if not is_admin():
+        return redirect('/')
+
+    with _job_lock:
+        running = _job_running
+        jname   = _job_name
+
+    last = load_last_range369_results()
+
+    if running and jname == 'Range 3-6-9 Scan':
+        run_btn = '<span class="btn btn-off">⏳ Scanning…</span>'
+    elif running:
+        run_btn = '<span class="btn btn-off">Another job running</span>'
+    else:
+        run_btn = '<a href="/run-range369" class="btn btn-blue">▶ Run Range 3-6-9 Scan</a>'
+
+    def score_color(s):
+        if s >= 10: return '#22c55e'
+        if s >= 7:  return '#f59e0b'
+        return '#555'
+
+    setup_colors = {'BELOW 6': '#15803d', 'AT 6': '#2563eb', 'ABOVE 6': '#b45309'}
+
+    def fmt(p):
+        return f"${p:,.2f}" if p >= 1 else f"${p:,.4f}"
+
+    rows_html = ''
+    if last and last.get('results'):
+        for r in last['results']:
+            sc = r['score']
+            levels = json.dumps({k: r[k] for k in ('L0', 'L30', 'L60', 'L90', 'L100')})
+            tc = '#22c55e' if r['to_6_pct'] >= 0 else '#ef4444'
+            edges = ('3✓ ' if r['held_3'] else '') + ('9✓' if r['held_9'] else '')
+            rows_html += f"""
+            <tr class="r369-row" data-ticker="{r['ticker']}" data-setup="{r['setup']}" data-levels='{levels}'>
+              <td><strong style="color:#60a5fa;font-size:1rem">{r['ticker']}</strong></td>
+              <td><span style="background:{setup_colors[r['setup']]};color:#fff;padding:2px 9px;
+                         border-radius:10px;font-size:.72rem;font-weight:700">{r['setup']}</span></td>
+              <td style="text-align:center">
+                <span style="background:{score_color(sc)};color:#fff;padding:3px 10px;
+                             border-radius:12px;font-weight:700;font-size:.85rem">{sc}</span>
+              </td>
+              <td style="color:#fff;font-weight:600">{fmt(r['price'])}</td>
+              <td style="color:#aaa">{r['position_pct']}%</td>
+              <td style="color:#888;font-size:.82rem">{fmt(r['L30'])} / <b style="color:#facc15">{fmt(r['L60'])}</b> / {fmt(r['L90'])}</td>
+              <td style="color:#aaa">{r['mean_pos']}%</td>
+              <td style="color:#fff;font-weight:600">{r['crosses']}</td>
+              <td style="color:#aaa">{r['in_band_pct']:.0f}%</td>
+              <td style="color:#aaa">{r['through_6_pct']:.0f}%</td>
+              <td style="color:#22c55e">{edges}</td>
+              <td style="color:{tc};font-weight:700">{r['to_6_pct']:+.2f}%</td>
+            </tr>"""
+
+    scan_info = ''
+    if last:
+        scan_info = (f"Last scan: {last['scan_date']} &nbsp;·&nbsp; "
+                     f"{last['total']} stocks rotating around the 6 from {last['tickers_scanned']} tickers")
+
+    chart_js = """
+    <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+    <script>
+    const R369_LINES = [
+      ['L0',   '0', '#475569', 1], ['L30', '3', '#60a5fa', 1], ['L60', '6', '#facc15', 3],
+      ['L90',  '9', '#60a5fa', 1], ['L100', '1', '#475569', 1],
+    ];
+    document.querySelectorAll('.r369-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const ticker  = row.dataset.ticker;
+        const levels  = JSON.parse(row.dataset.levels);
+        const existId = 'rdrop-' + ticker;
+        const exist = document.getElementById(existId);
+        if (exist) { exist.remove(); row.classList.remove('active'); return; }
+        document.querySelectorAll('.r369-drop').forEach(d => d.remove());
+        document.querySelectorAll('.r369-row.active').forEach(r => r.classList.remove('active'));
+        row.classList.add('active');
+        const drop = document.createElement('tr');
+        drop.id = existId; drop.className = 'r369-drop';
+        drop.innerHTML = `<td colspan="12" style="background:#080a10;padding:16px 20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <span style="color:#fff;font-weight:700;font-size:1rem">${ticker}</span>
+            <span style="color:#555;font-size:.75rem" id="rs-${ticker}">Loading...</span>
+          </div>
+          <div id="rm-${ticker}" style="height:420px;background:#0a0c14;border-radius:6px"></div>
+          <div id="rv-${ticker}" style="height:65px;background:#0a0c14;border-radius:6px;margin-top:3px"></div>
+        </td>`;
+        row.parentNode.insertBefore(drop, row.nextSibling);
+        fetch('/api/us-chart/' + ticker)
+          .then(r => r.json())
+          .then(data => {
+            if (data.error) { document.getElementById('rs-' + ticker).textContent = data.error; return; }
+            document.getElementById('rs-' + ticker).textContent = data.bars + ' bars · ' + data.date_range;
+            const chart = LightweightCharts.createChart(document.getElementById('rm-' + ticker), {
+              layout: { background: { color: '#0a0c14' }, textColor: '#888' },
+              grid: { vertLines: { color: '#1a1d2e' }, horzLines: { color: '#1a1d2e' } },
+              rightPriceScale: { borderColor: '#2a2d3e' },
+              timeScale: { borderColor: '#2a2d3e', timeVisible: true },
+              crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+            });
+            const candles = chart.addCandlestickSeries({
+              upColor: '#22c55e', downColor: '#ef4444',
+              borderUpColor: '#22c55e', borderDownColor: '#ef4444',
+              wickUpColor: '#22c55e', wickDownColor: '#ef4444',
+            });
+            candles.setData(data.ohlcv);
+            R369_LINES.forEach(([key, title, color, width]) => candles.createPriceLine({
+              price: levels[key], color: color, lineWidth: width, title: title,
+              lineStyle: key === 'L60' ? LightweightCharts.LineStyle.Solid : LightweightCharts.LineStyle.Dashed,
+              axisLabelVisible: true,
+            }));
+            const ema5  = chart.addLineSeries({ color: '#60a5fa', lineWidth: 1, title: 'EMA5' });
+            const ema26 = chart.addLineSeries({ color: '#f59e0b', lineWidth: 1, title: 'EMA26' });
+            ema5.setData(data.ema5); ema26.setData(data.ema26);
+            const barCount = data.ohlcv.length;
+            chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, barCount - 90), to: barCount + 5 });
+            chart.priceScale('right').applyOptions({ scaleMargins: { top: 0.12, bottom: 0.18 } });
+            const vc = LightweightCharts.createChart(document.getElementById('rv-' + ticker), {
+              layout: { background: { color: '#0a0c14' }, textColor: '#888' },
+              grid: { vertLines: { color: '#1a1d2e' }, horzLines: { color: '#1a1d2e' } },
+              rightPriceScale: { borderColor: '#2a2d3e' },
+              timeScale: { borderColor: '#2a2d3e', timeVisible: false },
+            });
+            const vs = vc.addHistogramSeries({ priceFormat: { type: 'volume' }, priceScaleId: '' });
+            vs.priceScale().applyOptions({ scaleMargins: { top: 0.1, bottom: 0 } });
+            vs.setData(data.volume); vc.timeScale().fitContent();
+            chart.timeScale().subscribeVisibleLogicalRangeChange(r => vc.timeScale().setVisibleLogicalRange(r));
+            vc.timeScale().subscribeVisibleLogicalRangeChange(r => chart.timeScale().setVisibleLogicalRange(r));
+          })
+          .catch(e => { document.getElementById('rs-' + ticker).textContent = 'Failed: ' + e; });
+      });
+    });
+    </script>"""
+
+    content = f"""
+    <section style="margin-bottom:20px">
+      <h2>Range 0-3-6-9-1 Scanner</h2>
+      <p style="font-size:.88rem;color:#888;margin-bottom:8px">
+        Splits each stock's dollar range into <b style="color:#ccc">0 · 3 · 6 · 9 · 1</b>
+        (0%, 30%, 60%, 90%, 100%) and finds stocks whose last 30 daily bars are rotating around
+        the <b style="color:#facc15">6</b> — price keeps crossing back over it, with the 3 and the 9
+        acting as the outer bands.
+      </p>
+      <p style="font-size:.8rem;color:#666;margin-bottom:16px">
+        Dollar range = $1 under $10, $10 for $10–99, $50 for $100–499, $100 for $500+
+        (e.g. $14.20 → 3 = $13, 6 = $16, 9 = $19). <b>Mean</b> = average close position in the range,
+        <b>Crosses</b> = times the close flipped sides of the 6, <b>Thru 6</b> = % of bars whose candle
+        traded through the 6, <b>Edges</b> = the 3 / 9 got tagged and held. <b>To 6</b> = move back to the mean.
+      </p>
+      <div class="btn-row" style="margin-bottom:8px">{run_btn}</div>
+      <p class="note">{scan_info}</p>
+    </section>
+
+    {'<section><h2>Log</h2><pre>' + get_log().replace("<","&lt;") + '</pre></section>' if running and jname == "Range 3-6-9 Scan" else ''}
+
+    <section>
+      <style>
+        .r369-table {{ width:100%; border-collapse:collapse; font-size:.9rem; }}
+        .r369-table th {{ text-align:left; padding:10px 12px; color:#777; font-size:.78rem;
+                          border-bottom:1px solid #2a2d3e; font-weight:500; white-space:nowrap;
+                          cursor:pointer; user-select:none; }}
+        .r369-table th:hover {{ color:#aaa; }}
+        .r369-table th.sort-asc::after  {{ content:' ▲'; font-size:.6rem; color:#60a5fa; }}
+        .r369-table th.sort-desc::after {{ content:' ▼'; font-size:.6rem; color:#60a5fa; }}
+        .r369-table td {{ padding:10px 12px; border-bottom:1px solid #151820; vertical-align:middle; }}
+        .r369-table .r369-row:hover td {{ background:#1f2235; cursor:pointer; }}
+        .r369-table .r369-row.active td {{ background:#1a2235; }}
+        .r369-drop td {{ padding:0 !important; }}
+        .r369-filter-btn {{ background:#1a1d2e; border:1px solid #2a2d3e; color:#888;
+                            padding:6px 16px; border-radius:6px; cursor:pointer; font-size:.82rem; }}
+        .r369-filter-btn.active {{ background:#1e3a5f; border-color:#3b82f6; color:#60a5fa; font-weight:600; }}
+      </style>
+
+      <div style="background:#0d0f1a;border:1px solid #1e2235;border-radius:8px;padding:14px 16px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span style="color:#aaa;font-size:.82rem;font-weight:600;letter-spacing:.04em">TRADINGVIEW WATCHLIST</span>
+          <button onclick="copyR369List()" id="rtv-copy-btn"
+            style="background:#1e3a5f;border:1px solid #3b82f6;color:#60a5fa;padding:5px 14px;
+                   border-radius:5px;cursor:pointer;font-size:.78rem;font-weight:600">
+            Copy
+          </button>
+        </div>
+        <textarea id="rtv-list" readonly rows="3"
+          style="width:100%;background:#080a10;border:1px solid #1a1d2e;border-radius:5px;
+                 color:#c7d2fe;font-size:.8rem;padding:8px 10px;resize:vertical;
+                 font-family:monospace;box-sizing:border-box;line-height:1.6"></textarea>
+        <p style="color:#444;font-size:.72rem;margin:6px 0 0">
+          Paste directly into TradingView → Watchlist → Import. Updates with the filter below.
+        </p>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="r369-filter-btn active" data-f="all"     onclick="setR369Filter('all')">All</button>
+        <button class="r369-filter-btn"        data-f="BELOW 6" onclick="setR369Filter('BELOW 6')">Below 6</button>
+        <button class="r369-filter-btn"        data-f="AT 6"    onclick="setR369Filter('AT 6')">At 6</button>
+        <button class="r369-filter-btn"        data-f="ABOVE 6" onclick="setR369Filter('ABOVE 6')">Above 6</button>
+        <span id="r369-count" style="color:#555;font-size:.78rem;margin-left:4px"></span>
+      </div>
+      <div style="overflow-x:auto">
+      <table class="r369-table">
+        <thead><tr>
+          <th onclick="sortR369(this)">Ticker</th>
+          <th onclick="sortR369(this)">Setup</th>
+          <th onclick="sortR369(this)" style="text-align:center">Score</th>
+          <th onclick="sortR369(this)">Price</th>
+          <th onclick="sortR369(this)">In range</th>
+          <th onclick="sortR369(this)">3 / 6 / 9</th>
+          <th onclick="sortR369(this)">Mean</th>
+          <th onclick="sortR369(this)">Crosses</th>
+          <th onclick="sortR369(this)">3–9 band</th>
+          <th onclick="sortR369(this)">Thru 6</th>
+          <th onclick="sortR369(this)">Edges</th>
+          <th onclick="sortR369(this)">To 6</th>
+        </tr></thead>
+        <tbody id="r369-tbody">
+          {rows_html if rows_html else '<tr><td colspan="12" style="color:#555;padding:20px">No results yet — run the scan.</td></tr>'}
+        </tbody>
+      </table>
+      </div>
+    </section>
+    <script>
+    function sortR369(th) {{
+      const tbody = document.getElementById('r369-tbody');
+      const idx = th.cellIndex;
+      const asc = th.classList.contains('sort-desc');
+      th.closest('thead').querySelectorAll('th').forEach(h => h.classList.remove('sort-asc','sort-desc'));
+      th.classList.add(asc ? 'sort-asc' : 'sort-desc');
+      document.querySelectorAll('.r369-drop').forEach(d => d.remove());
+      document.querySelectorAll('.r369-row.active').forEach(r => r.classList.remove('active'));
+      const rows = Array.from(tbody.querySelectorAll('.r369-row'));
+      rows.sort((a, b) => {{
+        const av = a.cells[idx].textContent.trim();
+        const bv = b.cells[idx].textContent.trim();
+        const an = parseFloat(av.replace(/[^0-9.-]/g,'')), bn = parseFloat(bv.replace(/[^0-9.-]/g,''));
+        const cmp = isNaN(an) ? av.localeCompare(bv) : an - bn;
+        return asc ? cmp : -cmp;
+      }});
+      rows.forEach(r => tbody.appendChild(r));
+    }}
+
+    function setR369Filter(mode) {{
+      document.querySelectorAll('.r369-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.f === mode));
+      let visible = 0;
+      const tickers = [];
+      document.querySelectorAll('.r369-row').forEach(r => {{
+        const show = (mode === 'all') || (r.dataset.setup === mode);
+        r.style.display = show ? '' : 'none';
+        if (show) {{ visible++; tickers.push(r.dataset.ticker); }}
+        else {{
+          const drop = document.getElementById('rdrop-' + r.dataset.ticker);
+          if (drop) {{ drop.remove(); r.classList.remove('active'); }}
+        }}
+      }});
+      document.getElementById('r369-count').textContent = visible + ' stock' + (visible !== 1 ? 's' : '');
+      document.getElementById('rtv-list').value = tickers.join(',');
+    }}
+
+    function copyR369List() {{
+      navigator.clipboard.writeText(document.getElementById('rtv-list').value).then(() => {{
+        const btn = document.getElementById('rtv-copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => {{ btn.textContent = 'Copy'; }}, 2000);
+      }});
+    }}
+
+    setR369Filter('all');
+    </script>
+    {chart_js}"""
+
+    return page_wrap('Range 3-6-9 Scanner', 'range369', content,
+                      auto_refresh=(running and jname == 'Range 3-6-9 Scan'))
+
+
 # ─── Recession / Inflation Watchlist ──────────────────────────────────────────
 
 def _run_recession_scan_job():
@@ -10438,6 +10748,17 @@ SIGNAL_FEED_SPECS = [
             (", with a volume surge on the gap" if r.get('vol_surge') else '') +
             (", recovered intraday" if r.get('recovered_intraday') else '') + '.'),
     },
+    {
+        'key': 'range369', 'label': 'Range 0-3-6-9-1 (6 as the mean)',
+        'loader': load_last_range369_results, 'top_n': 3,
+        'sort': lambda r: r['score'],
+        'reasoning': lambda r: (
+            f"Rotating around the 6 at ${r['L60']:.2f} — closed across it {r['crosses']} times in "
+            f"30 days, average close at {r['mean_pos']}% of the ${r['range_low']:.0f}–"
+            f"${r['range_low'] + r['range_size']:.0f} range, {r['in_band_pct']:.0f}% of closes "
+            f"between the 3 (${r['L30']:.2f}) and the 9 (${r['L90']:.2f}). Now {r['setup'].lower()} "
+            f"at ${r['price']:.2f}, {r['to_6_pct']:+.1f}% back to the 6."),
+    },
 ]
 
 
@@ -11158,6 +11479,7 @@ def admin_hub():
     higherlow_btn = job_btn('▶ Run Higher Low Scan', '/run-higher-low')
     extremeexit_btn = job_btn('▶ Run Extreme Exit Scan', '/run-extreme-exit')
     doublebottom_btn = job_btn('▶ Run Gap Down Double Bottom Scan', '/run-doublebottom')
+    range369_btn = job_btn('▶ Run Range 3-6-9 Scan', '/run-range369')
     recession_btn = job_btn('▶ Check Recession Watchlist', '/run-recession')
 
     refresh_note = f'Last updated: {last_refresh}' if last_refresh else 'Not updated today'
@@ -11188,6 +11510,7 @@ def admin_hub():
     higherlow_last = load_last_higher_low_results()
     extremeexit_last = load_last_extreme_exit_results()
     doublebottom_last = load_last_doublebottom_results()
+    range369_last = load_last_range369_results()
     recession_last = load_last_recession_results()
 
     def scan_summary(last, results_url):
@@ -11332,6 +11655,10 @@ def admin_hub():
             {scan_summary(doublebottom_last, '/doublebottom')}
           </div>
           <div>
+            <div class="btn-row" style="margin-bottom:6px">{range369_btn}</div>
+            {scan_summary(range369_last, '/range369')}
+          </div>
+          <div>
             <div class="btn-row" style="margin-bottom:6px">{recession_btn}</div>
             {scan_summary(recession_last, '/recession')}
           </div>
@@ -11359,6 +11686,7 @@ def admin_hub():
         <a href="/higher-low" class="btn btn-blue" style="font-size:.82rem">Higher Low Scanner</a>
         <a href="/extreme-exit" class="btn btn-blue" style="font-size:.82rem">Extreme Exit Scanner</a>
         <a href="/doublebottom" class="btn btn-blue" style="font-size:.82rem">Gap Down Double Bottom Scanner</a>
+        <a href="/range369" class="btn btn-blue" style="font-size:.82rem">Range 3-6-9 Scanner</a>
         <a href="/recession" class="btn btn-blue" style="font-size:.82rem">Recession Watchlist</a>
         <a href="/log-view" class="btn btn-blue" style="font-size:.82rem">Full Log</a>
         <a href="/ask"     class="btn btn-blue" style="font-size:.82rem">Ask Jimmy (Q&amp;A)</a>
