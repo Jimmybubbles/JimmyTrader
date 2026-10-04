@@ -50,6 +50,7 @@ from db_higher_low_scanner import run_higher_low_scan, load_last_higher_low_resu
 from db_extreme_exit_scanner import run_extreme_exit_scan, load_last_extreme_exit_results
 from db_doublebottom_scanner import run_doublebottom_scan, load_last_doublebottom_results
 from db_range369_scanner import run_range369_scan, load_last_range369_results
+import db_rotation
 from db_recession_watchlist import (
     run_recession_scan, load_last_recession_results,
     THEMES as RECESSION_THEMES, PILLARS as RECESSION_PILLARS,
@@ -857,9 +858,10 @@ def nav_html(active=''):
         auth_btn = '<a href="/ask/login" style="font-size:.78rem;padding:5px 12px;background:#252839;border-radius:6px;color:#aaa">Login</a>'
     admin_lnk = f'<span style="width:1px;background:#2a2d3e;align-self:stretch;margin:0 4px"></span>{lnk("/admin","Admin","admin")}' if is_admin() else ''
 
-    markets_keys = ('indexes', 'nasdaq', 'dow', 'sp500', 'russell', 'semiconductors')
+    markets_keys = ('indexes', 'nasdaq', 'dow', 'sp500', 'russell', 'semiconductors', 'rotation')
     markets_active = 'active' if active in markets_keys else ''
     markets_menu = (
+        (lnk('/rotation', 'Sector Rotation', 'rotation') if is_admin() else '') +
         lnk('/indexes', 'Indexes & ETFs', 'indexes') +
         lnk('/nasdaq', 'Nasdaq 100', 'nasdaq') +
         lnk('/dow', 'Dow 30', 'dow') +
@@ -9848,6 +9850,373 @@ def run_efi_route():
     return redirect('/efi')
 
 
+# ─── Sector / Industry Rotation (RRG) ─────────────────────────────────────────
+
+ROTATION_SECTOR_COLORS = {
+    'XLK': '#60a5fa', 'XLF': '#f59e0b', 'XLE': '#ef4444', 'XLV': '#22c55e', 'XLI': '#a78bfa',
+    'XLY': '#f472b6', 'XLC': '#2dd4bf', 'XLP': '#facc15', 'XLRE': '#fb923c', 'XLU': '#94a3b8',
+    'XLB': '#84cc16',
+}
+ROTATION_QUAD_COLORS = {'Leading': '#22c55e', 'Weakening': '#f59e0b',
+                        'Lagging': '#ef4444', 'Improving': '#60a5fa'}
+
+# Shared RRG chart (SVG) + sortable tables. drawRRG(id, rows, {color, href, label})
+ROTATION_JS = """
+<script>
+function drawRRG(id, rows, opts) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!rows.length) { el.innerHTML = '<p class="note">No data yet.</p>'; return; }
+  const W = Math.max(320, el.clientWidth), H = Math.round(Math.min(640, Math.max(340, W * 0.72))), P = 30;
+  let sx = 1.5, sy = 1.5;
+  rows.forEach(r => r.points.forEach(p => { sx = Math.max(sx, Math.abs(p[1] - 100)); sy = Math.max(sy, Math.abs(p[2] - 100)); }));
+  sx *= 1.12; sy *= 1.12;
+  const X = v => P + (v - (100 - sx)) / (2 * sx) * (W - 2 * P);
+  const Y = v => H - P - (v - (100 - sy)) / (2 * sy) * (H - 2 * P);
+  const cx = X(100), cy = Y(100);
+  const quad = (x, y, w, h, c) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}" fill-opacity=".07"/>`;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block;font-family:inherit">`;
+  s += quad(cx, P, W - P - cx, cy - P, '#22c55e') + quad(cx, cy, W - P - cx, H - P - cy, '#f59e0b')
+     + quad(P, cy, cx - P, H - P - cy, '#ef4444') + quad(P, P, cx - P, cy - P, '#60a5fa');
+  const lbl = (x, y, t, c, a) => `<text x="${x}" y="${y}" fill="${c}" font-size="13" font-weight="700" text-anchor="${a}" opacity=".75">${t}</text>`;
+  s += lbl(W - P - 6, P + 16, 'LEADING', '#22c55e', 'end') + lbl(W - P - 6, H - P - 8, 'WEAKENING', '#f59e0b', 'end')
+     + lbl(P + 6, H - P - 8, 'LAGGING', '#ef4444', 'start') + lbl(P + 6, P + 16, 'IMPROVING', '#60a5fa', 'start');
+  s += `<line x1="${cx}" y1="${P}" x2="${cx}" y2="${H - P}" stroke="#3a3f55"/><line x1="${P}" y1="${cy}" x2="${W - P}" y2="${cy}" stroke="#3a3f55"/>`;
+  s += `<text x="${W - P}" y="${cy - 5}" fill="#555" font-size="10" text-anchor="end">RS-Ratio →</text>`;
+  s += `<text x="${cx + 5}" y="${P + 10}" fill="#555" font-size="10">↑ RS-Momentum</text>`;
+  rows.forEach(r => {
+    const c = opts.color(r), pts = r.points.map(p => [X(p[1]), Y(p[2])]), n = pts.length;
+    let g = '';
+    for (let i = 1; i < n; i++) {
+      g += `<line x1="${pts[i-1][0]}" y1="${pts[i-1][1]}" x2="${pts[i][0]}" y2="${pts[i][1]}" stroke="${c}" stroke-width="2" stroke-opacity="${(0.2 + 0.8 * i / n).toFixed(2)}"/>`;
+      g += `<circle cx="${pts[i-1][0]}" cy="${pts[i-1][1]}" r="2.5" fill="${c}" fill-opacity="${(0.2 + 0.8 * i / n).toFixed(2)}"/>`;
+    }
+    const [hx, hy] = pts[n - 1];
+    const tip = `${r.ticker} — ${r.name}\\n${r.quadrant} (was ${r.prev_quadrant})\\nRS-Ratio ${r.ratio}  RS-Mom ${r.mom}`;
+    g += `<circle cx="${hx}" cy="${hy}" r="6.5" fill="${c}" stroke="#0a0c14" stroke-width="1.5"><title>${tip}</title></circle>`;
+    if (opts.label === undefined || opts.label(r))
+      g += `<text x="${hx + 9}" y="${hy + 4}" fill="${c}" font-size="11" font-weight="700">${r.ticker}</text>`;
+    s += opts.href ? `<a href="${opts.href(r)}" style="cursor:pointer">${g}</a>` : g;
+  });
+  el.innerHTML = s + '</svg>';
+}
+function sortRotation(th) {
+  const tbody = th.closest('table').querySelector('tbody'), idx = th.cellIndex;
+  const asc = th.classList.contains('sort-desc');
+  th.closest('thead').querySelectorAll('th').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+  th.classList.add(asc ? 'sort-asc' : 'sort-desc');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  rows.sort((a, b) => {
+    const av = a.cells[idx].dataset.v ?? a.cells[idx].textContent.trim();
+    const bv = b.cells[idx].dataset.v ?? b.cells[idx].textContent.trim();
+    const an = parseFloat(av), bn = parseFloat(bv);
+    const cmp = isNaN(an) || isNaN(bn) ? av.localeCompare(bv) : an - bn;
+    return asc ? cmp : -cmp;
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+</script>
+<style>
+.rot-table { width:100%; border-collapse:collapse; font-size:.86rem; }
+.rot-table th { text-align:left; padding:8px 10px; color:#777; font-size:.76rem; font-weight:500;
+                border-bottom:1px solid #2a2d3e; white-space:nowrap; cursor:pointer; user-select:none; }
+.rot-table th.sort-asc::after  { content:' ▲'; font-size:.6rem; color:#60a5fa; }
+.rot-table th.sort-desc::after { content:' ▼'; font-size:.6rem; color:#60a5fa; }
+.rot-table td { padding:8px 10px; border-bottom:1px solid #151820; white-space:nowrap; }
+.rot-table tr:hover td { background:#1f2235; }
+.rot-chart { background:#0a0c14; border:1px solid #1e2235; border-radius:8px; padding:6px; margin-bottom:12px; }
+.rot-pill { padding:2px 9px; border-radius:10px; font-size:.72rem; font-weight:700; color:#fff; }
+.rot-tabs a { display:inline-block; padding:5px 12px; margin:0 6px 6px 0; border-radius:6px; font-size:.8rem;
+              background:#1a1d2e; border:1px solid #2a2d3e; color:#888; }
+.rot-tabs a.on { background:#1e3a5f; border-color:#3b82f6; color:#60a5fa; font-weight:600; }
+</style>"""
+
+
+def _rotation_pill(q):
+    return f'<span class="rot-pill" style="background:{ROTATION_QUAD_COLORS[q]}">{q}</span>'
+
+
+def _rotation_pct(v):
+    if v is None:
+        return '<td data-v="-999" style="color:#555">—</td>'
+    return f'<td data-v="{v}" style="color:{"#22c55e" if v >= 0 else "#ef4444"}">{v:+.1f}%</td>'
+
+
+def _rotation_flow(v):
+    """$ volume last 20 days vs the 130 before — >1 means more money trading it than usual."""
+    if v is None:
+        return '<td data-v="-1" style="color:#555">—</td>'
+    col = '#22c55e' if v >= 1.2 else '#ef4444' if v <= 0.8 else '#aaa'
+    return f'<td data-v="{v}" style="color:{col}">{v:.2f}×</td>'
+
+
+def _rotation_moves(rows):
+    """One line per quadrant that something rotated INTO on the latest bar."""
+    lines = []
+    for q, verb in (('Improving', 'Money arriving (→ Improving)'), ('Leading', 'Took the lead (→ Leading)'),
+                    ('Weakening', 'Money starting to leave (→ Weakening)'), ('Lagging', 'Dropped to Lagging')):
+        moved = [r for r in rows if r['quadrant'] == q and r['prev_quadrant'] != q]
+        if moved:
+            names = ', '.join(f"<b>{r['ticker']}</b> {r['name']}" for r in moved)
+            lines.append(f'<div style="margin-bottom:4px"><span style="color:{ROTATION_QUAD_COLORS[q]};'
+                         f'font-weight:700">{verb}:</span> <span style="color:#ccc">{names}</span></div>')
+    return ''.join(lines) or '<div style="color:#777">No quadrant changes on the latest bar.</div>'
+
+
+def _rotation_etf_table(rows, show_sector):
+    head = ('<tr><th onclick="sortRotation(this)">ETF</th><th onclick="sortRotation(this)">Name</th>'
+            + ('<th onclick="sortRotation(this)">Sector</th>' if show_sector else '') +
+            '<th onclick="sortRotation(this)">Quadrant</th><th onclick="sortRotation(this)">Was</th>'
+            '<th onclick="sortRotation(this)">Heading</th><th onclick="sortRotation(this)">RS-Ratio</th>'
+            '<th onclick="sortRotation(this)">RS-Mom</th><th onclick="sortRotation(this)">1W</th>'
+            '<th onclick="sortRotation(this)">1M</th><th onclick="sortRotation(this)">3M</th>'
+            '<th onclick="sortRotation(this)">6M</th><th onclick="sortRotation(this)">$ Flow</th></tr>')
+    body = ''
+    order = {q: i for i, q in enumerate(('Leading', 'Improving', 'Weakening', 'Lagging'))}
+    for r in sorted(rows, key=lambda r: (order[r['quadrant']], -(r['ratio'] + r['mom']))):
+        sec = db_rotation.INDUSTRY_SECTOR.get(r['ticker'], r['ticker'])
+        body += (f"<tr><td><a href='/rotation/{r['ticker']}' style='color:{ROTATION_SECTOR_COLORS.get(sec, '#60a5fa')};"
+                 f"font-weight:700'>{r['ticker']}</a></td><td style='color:#ccc'>{r['name']}</td>"
+                 + (f"<td style='color:#888'>{db_rotation.NAMES.get(sec, '')}</td>" if show_sector else '') +
+                 f"<td data-v='{order[r['quadrant']]}'>{_rotation_pill(r['quadrant'])}</td>"
+                 f"<td data-v='{order[r['prev_quadrant']]}' style='color:#777'>{r['prev_quadrant']}</td>"
+                 f"<td style='font-size:1.05rem;color:{ROTATION_QUAD_COLORS[r['quadrant']]}'>{r['heading']}</td>"
+                 f"<td>{r['ratio']:.2f}</td><td>{r['mom']:.2f}</td>"
+                 + _rotation_pct(r['r1w']) + _rotation_pct(r['r1m']) + _rotation_pct(r['r3m'])
+                 + _rotation_pct(r['r6m']) + _rotation_flow(r['flow']) + '</tr>')
+    return f'<div style="overflow-x:auto"><table class="rot-table"><thead>{head}</thead><tbody>{body}</tbody></table></div>'
+
+
+def _rotation_tf_tabs(tf, base):
+    sep = '&' if '?' in base else '?'
+    return ('<div class="rot-tabs">'
+            f'<a href="{base}{sep}tf=weekly" class="{"on" if tf == "weekly" else ""}">Weekly (8-week tails)</a>'
+            f'<a href="{base}{sep}tf=daily" class="{"on" if tf == "daily" else ""}">Daily (8-day tails)</a></div>')
+
+
+def _run_rotation_job():
+    global _job_running, _job_name
+    with open(LOG_FILE, 'w') as f:
+        f.write(f"=== Rotation Update ===\nStarted: {datetime.now()}\n\n")
+    try:
+        db_rotation.run_rotation_job(log_callback=lambda m: open(LOG_FILE, 'a').write(m))
+    except Exception as e:
+        with open(LOG_FILE, 'a') as f:
+            f.write(f"\nERROR: {e}\n")
+    finally:
+        with _job_lock:
+            _job_running = False
+            _job_name    = ''
+
+
+def start_rotation_job():
+    global _job_running, _job_name
+    with _job_lock:
+        if _job_running:
+            return False
+        _job_running = True
+        _job_name    = 'Rotation Update'
+    threading.Thread(target=_run_rotation_job, daemon=True).start()
+    return True
+
+
+@app.route('/run-rotation')
+def run_rotation():
+    if not is_admin():
+        return redirect('/admin')
+    start_rotation_job()
+    return redirect('/rotation')
+
+
+@app.route('/rotation')
+def rotation_page():
+    if not is_admin():
+        return redirect('/')
+    tf = 'daily' if request.args.get('tf') == 'daily' else 'weekly'
+    sector = request.args.get('sector', '').upper()
+    sector = sector if sector in db_rotation.SECTORS else ''
+
+    with _job_lock:
+        running = _job_running
+        jname   = _job_name
+    if running and jname == 'Rotation Update':
+        run_btn = '<span class="btn btn-off">⏳ Updating…</span>'
+    elif running:
+        run_btn = '<span class="btn btn-off">Another job running</span>'
+    else:
+        run_btn = '<a href="/run-rotation" class="btn btn-blue">▶ Update ETF Prices &amp; Stock Groups</a>'
+
+    try:
+        close, dv = db_rotation.load_daily(db_rotation.ALL_ETFS, days=900)
+        sectors = db_rotation.rotation_rows(close, dv, list(db_rotation.SECTORS), db_rotation.BENCH,
+                                            weekly=(tf == 'weekly'))
+        ind_list = ([e for e, _ in db_rotation.SECTORS[sector][1]] if sector
+                    else list(db_rotation.INDUSTRY_SECTOR))
+        # all ~40 industries at once: shorter tails or the chart turns into spaghetti
+        industries = db_rotation.rotation_rows(close, dv, ind_list, db_rotation.BENCH, weekly=(tf == 'weekly'),
+                                               tail=db_rotation.TAIL if sector else 4)
+        error = ''
+    except Exception as e:
+        sectors, industries, error = [], [], f'<p style="color:#ef4444">Could not load prices: {e}</p>'
+
+    missing = [e for e in db_rotation.ALL_ETFS if e not in getattr(close, 'columns', [])] if not error else []
+    missing_note = (f'<p style="color:#f59e0b;font-size:.85rem">No prices yet for {", ".join(missing)} — '
+                    f'click <b>Update ETF Prices</b> to download them.</p>') if missing else ''
+    as_of = sectors[0]['points'][-1][0] if sectors else '—'
+
+    sec_tabs = ('<div class="rot-tabs">' + f'<a href="/rotation?tf={tf}" class="{"" if sector else "on"}">All industries</a>'
+                + ''.join(f'<a href="/rotation?tf={tf}&sector={s}" class="{"on" if s == sector else ""}" '
+                          f'style="border-left:3px solid {ROTATION_SECTOR_COLORS[s]}">{n}</a>'
+                          for s, (n, inds) in db_rotation.SECTORS.items() if inds) + '</div>')
+
+    data = json.dumps({'sectors': sectors, 'industries': industries,
+                       'colors': ROTATION_SECTOR_COLORS, 'parent': db_rotation.INDUSTRY_SECTOR})
+    content = f"""
+    {ROTATION_JS}
+    <section>
+      <h2>Sector &amp; Industry Rotation</h2>
+      <p style="color:#888;font-size:.88rem;max-width:860px">
+        Where money is moving. Each dot is an ETF plotted by its <b style="color:#ccc">relative strength vs the
+        S&amp;P 500</b> (right = beating SPY) and the <b style="color:#ccc">momentum of that strength</b>
+        (up = getting stronger). The tail is its path over the last 8 {('weeks' if tf == 'weekly' else 'days')}.
+        Groups rotate <b style="color:#ccc">clockwise</b>:
+        <span style="color:#60a5fa">Improving</span> → <span style="color:#22c55e">Leading</span> →
+        <span style="color:#f59e0b">Weakening</span> → <span style="color:#ef4444">Lagging</span>.
+        A tail curling from Lagging up into Improving is money starting to arrive.
+        Click any industry to see the stocks that trade with it.</p>
+      {_rotation_tf_tabs(tf, '/rotation' + (f'?sector={sector}' if sector else ''))}
+      <div class="btn-row" style="margin:6px 0 4px">{run_btn}</div>
+      <p class="note">Bars to {as_of} &nbsp;·&nbsp; $ Flow = dollar volume last 20 days vs the 130 before it</p>
+      {error}{missing_note}
+    </section>
+
+    {'<section><h2>Log</h2><pre>' + get_log().replace("<", "&lt;") + '</pre></section>' if running and jname == 'Rotation Update' else ''}
+
+    <section>
+      <h2>Sectors vs S&amp;P 500</h2>
+      <div style="background:#0d0f1a;border:1px solid #1e2235;border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:.86rem">
+        {_rotation_moves(sectors)}</div>
+      <div id="rrg-sectors" class="rot-chart"></div>
+      {_rotation_etf_table(sectors, show_sector=False)}
+    </section>
+
+    <section>
+      <h2>Industries vs S&amp;P 500{(' — ' + db_rotation.NAMES[sector]) if sector else ''}</h2>
+      {sec_tabs}
+      <div style="background:#0d0f1a;border:1px solid #1e2235;border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:.86rem">
+        {_rotation_moves(industries)}</div>
+      <div id="rrg-industries" class="rot-chart"></div>
+      {_rotation_etf_table(industries, show_sector=not sector)}
+    </section>
+
+    <script>
+    const ROT = {data};
+    function drawAll() {{
+      drawRRG('rrg-sectors', ROT.sectors, {{
+        color: r => ROT.colors[r.ticker] || '#60a5fa',
+        href: r => '/rotation?tf={tf}&sector=' + r.ticker }});
+      drawRRG('rrg-industries', ROT.industries, {{
+        color: r => ROT.colors[ROT.parent[r.ticker]] || '#60a5fa',
+        href: r => '/rotation/' + r.ticker + '?tf={tf}' }});
+    }}
+    drawAll();
+    let _rt; window.addEventListener('resize', () => {{ clearTimeout(_rt); _rt = setTimeout(drawAll, 200); }});
+    </script>"""
+    return page_wrap('Sector Rotation', 'rotation', content,
+                     auto_refresh=(running and jname == 'Rotation Update'))
+
+
+@app.route('/rotation/<etf>')
+def rotation_group_page(etf):
+    if not is_admin():
+        return redirect('/')
+    etf = etf.upper()
+    if etf not in db_rotation.SECTORS and etf not in db_rotation.INDUSTRY_SECTOR:
+        return redirect('/rotation')
+    tf = 'daily' if request.args.get('tf') == 'daily' else 'weekly'
+    sector = db_rotation.INDUSTRY_SECTOR.get(etf, etf)
+
+    last = db_rotation.load_last_rotation_results()
+    groups = (last or {}).get('results', {})
+    members = [t for t, a in groups.items()
+               if a['etf'] == etf and (a.get('dollar_vol') or 0) >= db_rotation.MIN_DOLLAR_VOL]
+    thin = sum(1 for a in groups.values() if a['etf'] == etf) - len(members)
+
+    rows, etf_row, error = [], None, ''
+    try:
+        close, dv = db_rotation.load_daily(members + [etf, db_rotation.BENCH], days=600)
+        rows = db_rotation.rotation_rows(close, dv, members, etf, weekly=(tf == 'weekly'))
+        er = db_rotation.rotation_rows(close, dv, [etf], db_rotation.BENCH, weekly=(tf == 'weekly'))
+        etf_row = er[0] if er else None
+    except Exception as e:
+        error = f'<p style="color:#ef4444">Could not load prices: {e}</p>'
+    for r in rows:
+        r['score'] = round((r['ratio'] - 100) + (r['mom'] - 100), 2)
+    rows.sort(key=lambda r: -r['score'])
+    plotted = rows[:25]
+
+    order = {q: i for i, q in enumerate(('Leading', 'Improving', 'Weakening', 'Lagging'))}
+    body = ''
+    for i, r in enumerate(rows, 1):
+        a = groups[r['ticker']]
+        body += (f"<tr><td data-v='{i}' style='color:#555'>{i}</td>"
+                 f"<td><a href='/chart/{r['ticker']}' style='color:#60a5fa;font-weight:700'>{r['ticker']}</a></td>"
+                 f"<td data-v='{order[r['quadrant']]}'>{_rotation_pill(r['quadrant'])}</td>"
+                 f"<td data-v='{order[r['prev_quadrant']]}' style='color:#777'>{r['prev_quadrant']}</td>"
+                 f"<td style='font-size:1.05rem;color:{ROTATION_QUAD_COLORS[r['quadrant']]}'>{r['heading']}</td>"
+                 f"<td>{r['ratio']:.2f}</td><td>{r['mom']:.2f}</td>"
+                 f"<td data-v='{r['score']}' style='color:#fff;font-weight:600'>{r['score']:+.2f}</td>"
+                 f"<td>{a['corr']}</td><td>{a['beta']}</td>"
+                 + _rotation_pct(r['r1w']) + _rotation_pct(r['r1m']) + _rotation_pct(r['r3m'])
+                 + _rotation_flow(r['flow']) +
+                 f"<td data-v='{r['dollar_vol']}' style='color:#888'>${r['dollar_vol'] / 1e6:,.1f}M</td></tr>")
+    head = ''.join(f'<th onclick="sortRotation(this)">{h}</th>' for h in
+                   ('#', 'Ticker', 'Quadrant', 'Was', 'Heading', 'RS-Ratio', 'RS-Mom', 'Score',
+                    'Corr', 'Beta', '1W', '1M', '3M', '$ Flow', '$ Vol/day'))
+    table = (f'<div style="overflow-x:auto"><table class="rot-table"><thead><tr>{head}</tr></thead>'
+             f'<tbody>{body}</tbody></table></div>') if rows else (
+             '<p class="note">No stocks assigned to this group yet — run <b>Update ETF Prices &amp; Stock '
+             'Groups</b> on the <a href="/rotation">Rotation</a> page.</p>')
+
+    etf_ctx = ''
+    if etf_row:
+        etf_ctx = (f"<p style='font-size:.9rem;color:#ccc'><b>{etf}</b> vs S&amp;P 500: "
+                   f"{_rotation_pill(etf_row['quadrant'])} <span style='color:#777'>(was {etf_row['prev_quadrant']})</span> "
+                   f"heading <b style='color:{ROTATION_QUAD_COLORS[etf_row['quadrant']]}'>{etf_row['heading']}</b> "
+                   f"· 1M {etf_row['r1m'] or 0:+.1f}% · 3M {etf_row['r3m'] or 0:+.1f}%</p>")
+    is_sector = etf in db_rotation.SECTORS
+    content = f"""
+    {ROTATION_JS}
+    <section>
+      <p style="margin-bottom:6px"><a href="/rotation?tf={tf}&sector={sector}" style="color:#888">← Rotation</a></p>
+      <h2 style="border-left:4px solid {ROTATION_SECTOR_COLORS.get(sector, '#60a5fa')};padding-left:10px">
+        {etf} — {db_rotation.NAMES[etf]}{' (sector, stocks not in an industry ETF)' if is_sector else ''}</h2>
+      {etf_ctx}
+      <p style="color:#888;font-size:.86rem;max-width:860px">
+        Stocks that trade with <b style="color:#ccc">{etf}</b> (their daily moves correlated with it most over
+        the last year), plotted by relative strength <b style="color:#ccc">vs {etf} itself</b>. When money is
+        flowing into {etf}, the stocks in <span style="color:#22c55e">Leading</span> and
+        <span style="color:#60a5fa">Improving</span> are the ones taking the biggest share of it.
+        <b>Score</b> = (RS-Ratio − 100) + (RS-Mom − 100). Chart shows the top 25 by score.</p>
+      {_rotation_tf_tabs(tf, f'/rotation/{etf}')}
+      <p class="note">{len(rows)} stocks with ${db_rotation.MIN_DOLLAR_VOL / 1e6:.0f}M+/day traded
+        {f'· {thin} thinner ones hidden ' if thin else ''}· groups built {last['scan_date'] if last else 'never'}</p>
+      {error}
+      <div id="rrg-stocks" class="rot-chart"></div>
+      {table}
+    </section>
+    <script>
+    const ROWS = {json.dumps(plotted)};
+    const QC = {json.dumps(ROTATION_QUAD_COLORS)};
+    function drawAll() {{
+      drawRRG('rrg-stocks', ROWS, {{ color: r => QC[r.quadrant], href: r => '/chart/' + r.ticker }});
+    }}
+    drawAll();
+    let _rt; window.addEventListener('resize', () => {{ clearTimeout(_rt); _rt = setTimeout(drawAll, 200); }});
+    </script>"""
+    return page_wrap(f'{etf} Rotation', 'rotation', content)
+
+
 # ─── Indexes & ETFs ───────────────────────────────────────────────────────────
 
 @app.route('/indexes')
@@ -10615,6 +10984,9 @@ def _price_channel_daily_results():
     return data.get('daily', {}).get('results')
 
 
+# Systems still in testing — their cards only show on /signals for admins
+SIGNAL_FEED_ADMIN_ONLY = {"range369"}
+
 SIGNAL_FEED_SPECS = [
     {
         'key': 'fader', 'label': 'Fader',
@@ -10796,7 +11168,8 @@ def signals_page():
         Current top picks across every scanner, refreshed each time a scan runs.
       </p>
     </div>
-    {''.join(_signal_section(s) for s in SIGNAL_FEED_SPECS)}
+    {''.join(_signal_section(s) for s in SIGNAL_FEED_SPECS
+             if s['key'] not in SIGNAL_FEED_ADMIN_ONLY or is_admin())}
     """
     return page_wrap('Signals', 'signals', content)
 
@@ -11480,6 +11853,7 @@ def admin_hub():
     extremeexit_btn = job_btn('▶ Run Extreme Exit Scan', '/run-extreme-exit')
     doublebottom_btn = job_btn('▶ Run Gap Down Double Bottom Scan', '/run-doublebottom')
     range369_btn = job_btn('▶ Run Range 3-6-9 Scan', '/run-range369')
+    rotation_btn = job_btn('▶ Update Rotation Groups', '/run-rotation')
     recession_btn = job_btn('▶ Check Recession Watchlist', '/run-recession')
 
     refresh_note = f'Last updated: {last_refresh}' if last_refresh else 'Not updated today'
@@ -11511,6 +11885,7 @@ def admin_hub():
     extremeexit_last = load_last_extreme_exit_results()
     doublebottom_last = load_last_doublebottom_results()
     range369_last = load_last_range369_results()
+    rotation_last = db_rotation.load_last_rotation_results()
     recession_last = load_last_recession_results()
 
     def scan_summary(last, results_url):
@@ -11659,6 +12034,10 @@ def admin_hub():
             {scan_summary(range369_last, '/range369')}
           </div>
           <div>
+            <div class="btn-row" style="margin-bottom:6px">{rotation_btn}</div>
+            {scan_summary(rotation_last, '/rotation')}
+          </div>
+          <div>
             <div class="btn-row" style="margin-bottom:6px">{recession_btn}</div>
             {scan_summary(recession_last, '/recession')}
           </div>
@@ -11687,6 +12066,7 @@ def admin_hub():
         <a href="/extreme-exit" class="btn btn-blue" style="font-size:.82rem">Extreme Exit Scanner</a>
         <a href="/doublebottom" class="btn btn-blue" style="font-size:.82rem">Gap Down Double Bottom Scanner</a>
         <a href="/range369" class="btn btn-blue" style="font-size:.82rem">Range 3-6-9 Scanner</a>
+        <a href="/rotation" class="btn btn-blue" style="font-size:.82rem">Sector Rotation</a>
         <a href="/recession" class="btn btn-blue" style="font-size:.82rem">Recession Watchlist</a>
         <a href="/log-view" class="btn btn-blue" style="font-size:.82rem">Full Log</a>
         <a href="/ask"     class="btn btn-blue" style="font-size:.82rem">Ask Jimmy (Q&amp;A)</a>

@@ -132,6 +132,11 @@ def main():
     else:
         tickers = tickers_df.iloc[:, 0].tolist()
 
+    # Sector / industry ETFs for the Rotation page (IGV, ITA, KIE…) aren't all in
+    # 5000.csv but need to stay current, so they're always included
+    from db_rotation import ALL_ETFS
+    tickers += [t for t in ALL_ETFS if t not in set(tickers)]
+
     skip_list = load_skip_list()
     tickers = [t for t in tickers if t.upper() not in skip_list]
 
